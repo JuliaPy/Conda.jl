@@ -21,7 +21,7 @@ function installer_url()
     if OS_NAME == :Darwin
         res *= "MacOSX"
     elseif OS_NAME in [:Linux, :Windows]
-        res *= OS_NAME
+        res *= string(OS_NAME)
     else
         error("Unsuported OS.")
     end
