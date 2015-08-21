@@ -1,5 +1,7 @@
 # Conda.jl
 
+[![Build Status](https://travis-ci.org/Luthaf/Conda.jl.svg)](https://travis-ci.org/Luthaf/Conda.jl)
+
 This package allow to use [conda](http://conda.pydata.org/) as a binary provider for
 Julia. `conda` is a package manager which started as the binary package manager for the
 Anaconda Python distribution, but it also provide arbitrary packages. Conda.jl uses the
