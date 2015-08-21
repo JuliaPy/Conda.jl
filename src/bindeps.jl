@@ -1,40 +1,32 @@
 # This file contains the necessary ingredients to create a PackageManager for BinDeps
 using BinDeps
 
-type CondaManager <: BinDeps.PackageManager
-    packages
+type Manager <: BinDeps.PackageManager
+    packages::Vector{ASCIIString}
 end
 
-function Base.show(io::IO, hb::CondaManager)
-    write(io, "Homebrew Bottles ", join(isa(hb.packages, AbstractString) ? [hb.packages] : hb.packages,", "))
+function Base.show(io::IO, manager::Manager)
+    write(io, "Conda packages ", join(isa(hb.packages, AbstractString) ? [hb.packages] : hb.packages,", "))
 end
 
-# Only return true on Darwin platforms
-BinDeps.can_use(::Type{CondaManager}) = OS_NAME == :Darwin
+BinDeps.can_use(::Type{Manager}) = true
 
-function BinDeps.package_available(p::CondaManager)
-    !can_use(CondaManager) && return false
-    pkgs = p.packages
-    if isa(pkgs, AbstractString)
-        pkgs = [pkgs]
-    end
-
-    # For each package, see if we can get info about it.  If not, fail out
+function BinDeps.package_available(manager::Manager)
+    pkgs = manager.packages
+    # For each package, see if we can get info about it. If not, fail out
     for pkg in pkgs
-        try
-            info(pkg)
-        catch
+        if !exists(pkg)
             return false
         end
     end
     return true
 end
 
-BinDeps.libdir(::CondaManager, ::Any) = joinpath(PREFIX, "lib")
-BinDeps.provider(::Type{CondaManager}, packages::Vector{ASCIIString}; opts...) = CondaManager(packages)
+BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
+BinDeps.provider(::Type{Manager}, packages::Vector{ASCIIString}; opts...) = Manager(packages)
 
-function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, p::CondaManager, opts)
-    pkgs = p.packages
+function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::Manager, opts)
+    pkgs = manager.packages
     if isa(pkgs, AbstractString)
         pkgs = [pkgs]
     end
