@@ -75,8 +75,9 @@ function rm(pkg::AbstractString)
 end
 
 function update()
+    channels = additional_channels()
     run(`$conda install -y conda`)
-    run(`$conda update -y`)
+    run(`$conda update $(split(channels)) -y`)
 end
 
 function list()
@@ -84,7 +85,8 @@ function list()
 end
 
 function exists(package::AbstractString)
-    res = readall(`$conda search --full-name $package`)
+    channels = additional_channels()
+    res = readall(`$conda search $(split(channels)) --full-name $package`)
     if chomp(res) == "Fetching package metadata: ...."
         # No package found
         return false

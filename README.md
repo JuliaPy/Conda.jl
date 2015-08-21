@@ -35,6 +35,14 @@ using Conda
 provides(Conda.Manager, "libnetcdf", netcdf)
 ```
 
+If your dependency is available in another channel than the default one, you should add
+this channel in the CHANNELS array. For example, if you uses binstar:
+```julia
+using Conda
+push!(Conda.CHANNELS, "https://conda.binstar.org/<username>")
+provides(Conda.Manager, "libnetcdf", netcdf)
+```
+
 If the binary dependency is only available for some OS, give this information to BinDeps:
 ```julia
 provides(Conda.Manager, "libnetcdf", netcdf, os=:Linux)
