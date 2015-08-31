@@ -10,7 +10,7 @@ miniconda minimalistic Python environment to use `conda`.
 
 ## Basic functionalities
 
-Basic package managing utilities are provided in the Conda module :
+Basic package managing utilities are provided in the Conda module:
 - `Conda.add(package)`: install a package;
 - `Conda.rm(package)`: remove (uninstall) a package;
 - `Conda.update()`: update all installed packages to the latest version;
