@@ -1,7 +1,36 @@
+"""
+The Conda module provides access to the [conda](http://conda.pydata.org/) packages
+manager. Its main purpose is to be used as a BinDeps provider, to install binary
+dependencies of other Julia packages.
+
+The main functions in Conda are:
+
+- `Conda.add(package)`: install a package;
+- `Conda.rm(package)`: remove (uninstall) a package;
+- `Conda.update()`: update all installed packages to the latest version;
+- `Conda.list()`: list all installed packages.
+
+To use Conda as a binary provider for BinDeps, the `Conda.Manager` type is proposed. A
+small example looks like this:
+
+```julia
+# Declare dependency
+using BinDeps
+@BinDeps.setup
+netcdf = library_dependency("netcdf", aliases = ["libnetcdf","libnetcdf4"])
+
+using Conda
+# Use alternative conda channel.
+push!(Conda.CHANNELS, "https://conda.binstar.org/<username>")
+provides(Conda.Manager, "libnetcdf", netcdf)
+```
+"""
 module Conda
 using Compat
 
+"Prefix for installation of all the packages."
 const PREFIX = Pkg.dir("Conda", "deps", "usr")
+
 const conda = joinpath(PREFIX, "bin", "conda")
 const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
@@ -10,13 +39,15 @@ additional_channels() = join(CHANNELS, " -c ")
 
 function __init__()
     # Let's see if Conda is installed. If not, let's do that first!
-    install_conda()
+    if !isexecutable(conda)
+        _install_conda()
+    end
     # Update environment variables such as PATH, DL_LOAD_PATH, etc...
-    update_env()
+    _update_env()
 end
 
-# Get the miniconda installer URL.
-function installer_url()
+"Get the miniconda installer URL."
+function _installer_url()
     res = "https://repo.continuum.io/miniconda/Miniconda-latest-"
     if OS_NAME == :Darwin
         res *= "MacOSX"
@@ -40,23 +71,19 @@ function installer_url()
     return res
 end
 
-
-function install_conda()
+"Install miniconda"
+function _install_conda()
     # Ensure PREFIX exists
     mkpath(PREFIX)
-
-    # Make sure conda isn't already installed
-    if !isexecutable(conda)
-        info("Downloading miniconda installer …")
-        installer = joinpath(PREFIX, "installer")
-        download(installer_url(), installer)
-        chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
-        run(`$installer -b -f -p $PREFIX`)
-    end
+    info("Downloading miniconda installer …")
+    installer = joinpath(PREFIX, "installer")
+    download(installer_url(), installer)
+    chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
+    run(`$installer -b -f -p $PREFIX`)
 end
 
-# Update environment variables so we can natively call conda, etc...
-function update_env()
+"Update environment variables so we can natively call conda, etc..."
+function _update_env()
     if length(Base.search(ENV["PATH"], joinpath(PREFIX, "bin"))) == 0
         ENV["PATH"] = "$(realpath(joinpath(PREFIX, "bin"))):$(ENV["PATH"])"
     end
@@ -65,25 +92,30 @@ function update_env()
     end
 end
 
+"Install a new package."
 function add(pkg::AbstractString)
     channels = additional_channels()
     run(`$conda install -y $(split(channels)) $pkg`)
 end
 
+"Uninstall a package."
 function rm(pkg::AbstractString)
     run(`$conda remove -y $pkg`)
 end
 
+"Update all installed packages."
 function update()
     channels = additional_channels()
     run(`$conda install -y conda`)
     run(`$conda update $(split(channels)) -y`)
 end
 
+"List all installed packages to standard output."
 function list()
     run(`$conda list`)
 end
 
+"Check if a given package exists."
 function exists(package::AbstractString)
     channels = additional_channels()
     res = readall(`$conda search $(split(channels)) --full-name $package`)
