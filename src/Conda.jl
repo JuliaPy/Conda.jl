@@ -27,6 +27,7 @@ provides(Conda.Manager, "libnetcdf", netcdf)
 """
 module Conda
 using Compat
+using JSON
 
 "Prefix for installation of all the packages."
 const PREFIX = Pkg.dir("Conda", "deps", "usr")
@@ -106,8 +107,24 @@ end
 "Update all installed packages."
 function update()
     channels = additional_channels()
-    run(`$conda install -y conda`)
-    run(`$conda update $(split(channels)) -y`)
+    for package in _installed_packages()
+        run(`$conda update $(split(channels)) -y $package`)
+    end
+end
+
+"List all installed packages as an array."
+function _installed_packages()
+    packages = JSON.parse(readall(`$conda list --json`))
+    regex = r"([\w_-]*)-\d.*"
+    for i in 1:length(packages)
+        m = match(regex, packages[i])
+        if m != nothing
+            packages[i] = m.captures[1]
+        else
+            error("Failed parsing string: $package. Please open an issue!")
+        end
+    end
+    return packages
 end
 
 "List all installed packages to standard output."
