@@ -95,6 +95,6 @@ function exists(package::AbstractString)
     end
 end
 
-include("bindeps.jl")
+include("bindeps_conda.jl")
 
 end
