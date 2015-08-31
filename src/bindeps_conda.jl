@@ -6,7 +6,7 @@ type Manager <: BinDeps.PackageManager
 end
 
 function Base.show(io::IO, manager::Manager)
-    write(io, "Conda packages ", join(isa(hb.packages, AbstractString) ? [hb.packages] : hb.packages,", "))
+    write(io, "Conda packages: ", join(manager.packages, ", "))
 end
 
 BinDeps.can_use(::Type{Manager}) = true
@@ -24,6 +24,7 @@ end
 
 BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
 BinDeps.provider(::Type{Manager}, packages::Vector{ASCIIString}; opts...) = Manager(packages)
+BinDeps.provider(::Type{Manager}, packages::ASCIIString; opts...) = Manager([packages])
 
 function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::Manager, opts)
     pkgs = manager.packages
