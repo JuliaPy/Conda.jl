@@ -7,8 +7,9 @@ Julia. `conda` is a package manager which started as the binary package manager 
 Anaconda Python distribution, but it also provide arbitrary packages. Conda.jl uses the
 miniconda minimalistic Python environment to use `conda`.
 
+You can install it by running `Pkg.add("Conda")` at julia prompt.
 
-## Basic functionalities
+# Basic functionalities
 
 Basic package managing utilities are provided in the Conda module:
 - `Conda.add(package)`: install a package;
@@ -17,7 +18,7 @@ Basic package managing utilities are provided in the Conda module:
 - `Conda.list()`: list all installed packages.
 
 
-## BinDeps integration: using Conda.jl as a package author
+# BinDeps integration: using Conda.jl as a package author
 
 Conda.jl can be used as a `Provider` for BinDeps with the `Conda.Manager` type. You first
 needs to write a [conda recipe](http://conda.pydata.org/docs/building/recipe.html), and
@@ -47,3 +48,14 @@ If the binary dependency is only available for some OS, give this information to
 ```julia
 provides(Conda.Manager, "libnetcdf", netcdf, os=:Linux)
 ```
+
+# Bugs and suggestions
+
+Conda have been tested on Linux and OS X, and the code for Windows is here but untested.
+
+Please report any bug or suggestion as an [issue](https://github.com/Luthaf/Conda.jl/issues)
+
+# Licence
+
+The Conda.jl package is licensed under the MIT Expat License, and is copyrighted by
+Guillaume Fraux and contributors.
