@@ -78,7 +78,7 @@ function _install_conda()
     mkpath(PREFIX)
     info("Downloading miniconda installer …")
     installer = joinpath(PREFIX, "installer")
-    download(installer_url(), installer)
+    download(_installer_url(), installer)
     chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
     run(`$installer -b -f -p $PREFIX`)
 end
