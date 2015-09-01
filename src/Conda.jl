@@ -121,7 +121,7 @@ function _installed_packages()
         if m != nothing
             packages[i] = m.captures[1]
         else
-            error("Failed parsing string: $package. Please open an issue!")
+            error("Failed parsing string: $(packages[i]). Please open an issue!")
         end
     end
     return packages
