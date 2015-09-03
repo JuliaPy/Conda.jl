@@ -38,15 +38,6 @@ const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL
 CHANNELS = AbstractString[""]
 additional_channels() = join(CHANNELS, " -c ")
 
-function __init__()
-    # Let's see if Conda is installed. If not, let's do that first!
-    if !isexecutable(conda)
-        _install_conda()
-    end
-    # Update environment variables such as PATH, DL_LOAD_PATH, etc...
-    _update_env()
-end
-
 "Get the miniconda installer URL."
 function _installer_url()
     res = "https://repo.continuum.io/miniconda/Miniconda-latest-"
@@ -73,7 +64,7 @@ function _installer_url()
 end
 
 "Install miniconda"
-function _install_conda()
+function _install()
     # Ensure PREFIX exists
     mkpath(PREFIX)
     info("Downloading miniconda installer …")
@@ -81,16 +72,6 @@ function _install_conda()
     download(_installer_url(), installer)
     chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
     run(`$installer -b -f -p $PREFIX`)
-end
-
-"Update environment variables so we can natively call conda, etc..."
-function _update_env()
-    if length(Base.search(ENV["PATH"], joinpath(PREFIX, "bin"))) == 0
-        ENV["PATH"] = "$(realpath(joinpath(PREFIX, "bin"))):$(ENV["PATH"])"
-    end
-    if !(joinpath(PREFIX, "lib") in DL_LOAD_PATH)
-        push!(DL_LOAD_PATH, joinpath(PREFIX, "lib") )
-    end
 end
 
 "Install a new package."
