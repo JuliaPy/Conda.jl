@@ -35,8 +35,8 @@ const PREFIX = Pkg.dir("Conda", "deps", "usr")
 const conda = joinpath(PREFIX, "bin", "conda")
 const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
 
-CHANNELS = AbstractString[""]
-additional_channels() = join(CHANNELS, " -c ")
+CHANNELS = AbstractString[]
+additional_channels() = ["--channel " * channel for channel in CHANNELS]
 
 "Get the miniconda installer URL."
 function _installer_url()
@@ -77,7 +77,7 @@ end
 "Install a new package."
 function add(pkg::AbstractString)
     channels = additional_channels()
-    run(`$conda install -y $(split(channels)) $pkg`)
+    run(`$conda install -y $channels $pkg`)
 end
 
 "Uninstall a package."
@@ -89,7 +89,7 @@ end
 function update()
     channels = additional_channels()
     for package in _installed_packages()
-        run(`$conda update $(split(channels)) -y $package`)
+        run(`$conda update $channels -y $package`)
     end
 end
 
@@ -116,7 +116,7 @@ end
 "Check if a given package exists."
 function exists(package::AbstractString)
     channels = additional_channels()
-    res = readall(`$conda search $(split(channels)) --full-name $package`)
+    res = readall(`$conda search $channels --full-name $package`)
     if chomp(res) == "Fetching package metadata: ...."
         # No package found
         return false
