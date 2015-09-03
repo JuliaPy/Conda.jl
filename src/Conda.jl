@@ -113,15 +113,19 @@ function list()
     run(`$conda list`)
 end
 
+"Search packages for a string"
+function search(package::AbstractString)
+    channels = additional_channels()
+    return collect(keys(JSON.parse(readall(`$conda search $channels $package --json`))))
+end
+
 "Check if a given package exists."
 function exists(package::AbstractString)
-    channels = additional_channels()
-    res = readall(`$conda search $channels --full-name $package`)
-    if chomp(res) == "Fetching package metadata: ...."
-        # No package found
-        return false
-    else
+    if package in search(package)
+        # Found exactly this package
         return true
+    else
+        return false
     end
 end
 
