@@ -40,7 +40,7 @@ additional_channels() = ["--channel " * channel for channel in CHANNELS]
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda-latest-"
+    res = "https://repo.continuum.io/miniconda/Miniconda-3.9.1-"
     if OS_NAME == :Darwin
         res *= "MacOSX"
     elseif OS_NAME in [:Linux, :Windows]
