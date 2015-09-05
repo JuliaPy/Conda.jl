@@ -32,8 +32,8 @@ using JSON
 "Prefix for installation of all the packages."
 const PREFIX = Pkg.dir("Conda", "deps", "usr")
 
-const conda = joinpath(PREFIX, "bin", "conda")
-const DL_LOAD_PATH = VERSION >= v"0.4.0-dev+3844" ? Libdl.DL_LOAD_PATH : Base.DL_LOAD_PATH
+@unix_only const conda = joinpath(PREFIX, "bin", "conda")
+@windows_only const conda = joinpath(PREFIX, "Scripts", "conda")
 
 CHANNELS = AbstractString[]
 additional_channels() = ["--channel " * channel for channel in CHANNELS]
@@ -67,11 +67,19 @@ end
 function _install_conda()
     # Ensure PREFIX exists
     mkpath(PREFIX)
-    info("Downloading miniconda installer …")
-    installer = joinpath(PREFIX, "installer")
+    info("Downloading miniconda installer ...")
+    @unix_only installer = joinpath(PREFIX, "installer.sh")
+    @windows_only installer = joinpath(PREFIX, "installer.exe")
     download(_installer_url(), installer)
-    chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
-    run(`$installer -b -f -p $PREFIX`)
+
+    info("Installing miniconda ...")
+    @unix_only begin
+        chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
+        run(`$installer -b -f -p $PREFIX`)
+    end
+    @windows_only begin
+        run(`$installer /S /D=$PREFIX`)
+    end
 end
 
 "Install a new package."
