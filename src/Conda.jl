@@ -64,7 +64,7 @@ function _installer_url()
 end
 
 "Install miniconda"
-function _install()
+function _install_conda()
     # Ensure PREFIX exists
     mkpath(PREFIX)
     info("Downloading miniconda installer …")
