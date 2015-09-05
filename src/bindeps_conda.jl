@@ -22,7 +22,13 @@ function BinDeps.package_available(manager::Manager)
     return true
 end
 
-BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
+@unix_only BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
+@windows_only begin
+    function BinDeps.libdir(m::Manager, ::Any)
+        joinpath(PREFIX, "pkgs", version(m.packages[1]), "Library", "bin")
+    end
+end
+
 BinDeps.provider(::Type{Manager}, packages::Vector{ASCIIString}; opts...) = Manager(packages)
 BinDeps.provider(::Type{Manager}, packages::ASCIIString; opts...) = Manager([packages])
 

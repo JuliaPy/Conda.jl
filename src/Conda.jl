@@ -121,6 +121,17 @@ function list()
     run(`$conda list`)
 end
 
+"Get the exact version of a package."
+function version(name::AbstractString)
+    packages = JSON.parse(readall(`$conda list --json`))
+    for package in packages
+        if startswith(package, name)
+            return package
+        end
+    end
+    error("Could not find the $name package")
+end
+
 "Search packages for a string"
 function search(package::AbstractString)
     channels = additional_channels()
