@@ -78,7 +78,7 @@ function _install_conda()
         run(`$installer -b -f -p $PREFIX`)
     end
     @windows_only begin
-        run(`$installer /S /D=$PREFIX`)
+        run(`$installer /S  /AddToPath=0 /RegisterPython=0 /D=$PREFIX`)
     end
 end
 
