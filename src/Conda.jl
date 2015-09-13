@@ -30,7 +30,7 @@ using Compat
 using JSON
 
 "Prefix for installation of all the packages."
-const PREFIX = Pkg.dir("Conda", "deps", "usr")
+const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
 
 @unix_only const conda = joinpath(PREFIX, "bin", "conda")
 @windows_only const conda = joinpath(PREFIX, "Scripts", "conda")
@@ -78,7 +78,7 @@ function _install_conda()
         run(`$installer -b -f -p $PREFIX`)
     end
     @windows_only begin
-        run(`$installer /S /D=$PREFIX`)
+        run(`$installer /S  /AddToPath=0 /RegisterPython=0 /D=$PREFIX`)
     end
 end
 
