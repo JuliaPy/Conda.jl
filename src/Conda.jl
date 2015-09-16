@@ -31,6 +31,24 @@ using JSON
 
 "Prefix for installation of all the packages."
 const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
+@unix_only begin
+    function bindir(package) 
+        packages = _installed_packages_dict()
+        haskey(packages, package) || error("Package not found")
+        joinpath(PREFIX, "pkgs", packages[package][2], "bin")
+    end
+    scriptsdir() = bindir()
+end
+@windows_only function bindir(package) 
+    packages = _installed_packages_dict()
+    haskey(packages, package) || error("Package not found")
+    joinpath(PREFIX, "pkgs", packages[package][2], "Library", "bin")
+end
+@windows_only function scriptsdir(package) 
+    packages = _installed_packages_dict()
+    haskey(packages, package) || error("Package not found")
+    joinpath(PREFIX, "pkgs", packages[package][2], "Scripts")
+end
 
 @unix_only const conda = joinpath(PREFIX, "bin", "conda")
 @windows_only const conda = joinpath(PREFIX, "Scripts", "conda")
@@ -101,20 +119,26 @@ function update()
     end
 end
 
-"List all installed packages as an array."
-function _installed_packages()
+"List all installed packages as an dict of tuples with (version_number, fullname)."
+function  _installed_packages_dict()
     packages = JSON.parse(readall(`$conda list --json`))
-    regex = r"([\w_-]*)-\d.*"
+    # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
+    # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
+    regex = r"^(.*?)-((\d+\.){1,2}\d+)[^-]*-(.*)$"
+    package_dict = Dict{UTF8String, Any}()
     for i in 1:length(packages)
         m = match(regex, packages[i])
         if m != nothing
-            packages[i] = m.captures[1]
+            package_dict[m.captures[1]] = (convert(VersionNumber, m.captures[2]), packages[i])
         else
             error("Failed parsing string: $(packages[i]). Please open an issue!")
         end
     end
-    return packages
+    return package_dict
 end
+
+"List all installed packages as an array."
+_installed_packages() = keys(_installed_packages_dict())
 
 "List all installed packages to standard output."
 function list()

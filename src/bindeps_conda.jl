@@ -1,5 +1,5 @@
 # This file contains the necessary ingredients to create a PackageManager for BinDeps
-using BinDeps
+import BinDeps
 
 type Manager <: BinDeps.PackageManager
     packages::Vector{ASCIIString}
