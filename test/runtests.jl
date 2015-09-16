@@ -16,9 +16,13 @@ end
 
 @test isfile(curl_path)
 
+@test isfile(joinpath(Conda.bindir("curl"), basename(curl_path)))
+
 Conda.rm("curl")
 @unix_only @test !isfile(curl_path)
 
 if already_installed
     Conda.add("curl")
 end
+
+@test isfile(joinpath(Conda.scriptsdir("conda"), "conda" * @windows ? ".exe": ""))
