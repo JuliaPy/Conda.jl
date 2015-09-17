@@ -31,22 +31,33 @@ using JSON
 
 "Prefix for installation of all the packages."
 const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
-@unix_only begin
-    function bindir(package) 
+"""Returns the directory for the binary files of a package. Attention on unix
+ `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
+ Use `scriptdir()` to ex. get numpy's f2py or ipython"""
+@unix_only begin function bindir(package) 
         packages = _installed_packages_dict()
-        haskey(packages, package) || error("Package not found")
+        haskey(packages, package) || error("Package '$package' not found")
         joinpath(PREFIX, "pkgs", packages[package][2], "bin")
     end
-    scriptsdir() = bindir()
 end
+"""Returns the directory for the scripts files of a package. Attention on unix
+ `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
+ Use `scriptdir()` to ex. get numpy's f2py or ipython"""
+scriptsdir(package) = bindir(package)
+"""Returns the directory for the binary files of a package. Attention on unix
+ `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
+ Use `scriptdir()` to ex. get numpy's f2py or ipython"""
 @windows_only function bindir(package) 
     packages = _installed_packages_dict()
-    haskey(packages, package) || error("Package not found")
+    haskey(packages, package) || error("Package '$package' not found")
     joinpath(PREFIX, "pkgs", packages[package][2], "Library", "bin")
 end
+"""Returns the directory for the scripts files of a package. Attention on unix
+ `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
+ Use `scriptdir()` to ex. get numpy's f2py or ipython"""
 @windows_only function scriptsdir(package) 
     packages = _installed_packages_dict()
-    haskey(packages, package) || error("Package not found")
+    haskey(packages, package) || error("Package '$package' not found")
     joinpath(PREFIX, "pkgs", packages[package][2], "Scripts")
 end
 
