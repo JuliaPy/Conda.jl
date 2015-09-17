@@ -22,3 +22,6 @@ Conda.rm("curl")
 if already_installed
     Conda.add("curl")
 end
+
+@test isfile(joinpath(Conda.scriptsdir("conda"),"conda" * @windows ? ".exe": ""))
+@test isfile(joinpath(Conda.bindir("curl"),"curl" * @windows ? ".exe": ""))
