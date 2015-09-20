@@ -16,7 +16,7 @@ end
 
 @test isfile(curl_path)
 
-@test isfile(joinpath(Conda.bindir("curl"), basename(curl_path)))
+@test isfile(joinpath(Conda.BINDIR, basename(curl_path)))
 
 Conda.rm("curl")
 @unix_only @test !isfile(curl_path)
@@ -25,4 +25,8 @@ if already_installed
     Conda.add("curl")
 end
 
-@test isfile(joinpath(Conda.scriptsdir("conda"), "conda" * @windows ? ".exe": ""))
+@test isfile(joinpath(Conda.SCRIPTDIR, "conda" * @windows ? ".exe": ""))
+
+Conda.add("jupyter=1.0.0")
+@test v"4.0.0" == convert(VersionNumber, chomp(readall(`$(joinpath(Conda.SCRIPTDIR, "jupyter-kernelspec")) --version`)))
+

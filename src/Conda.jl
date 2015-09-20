@@ -32,37 +32,23 @@ using JSON
 "Prefix for installation of all the packages."
 const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
 """Returns the directory for the binary files of a package. Attention on unix
- `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
- Use `scriptdir()` to ex. get numpy's f2py or ipython"""
-@unix_only begin function bindir(package) 
-        packages = _installed_packages_dict()
-        haskey(packages, package) || error("Package '$package' not found")
-        joinpath(PREFIX, "pkgs", packages[package][2], "bin")
-    end
-end
+ `Conda.BINDIR` and `Conda.SCRIPTDIR` returns the same path while on windows it is two separate directories.
+ Use `Conda.SCRIPTDIR` to ex. get the folder for numpy's f2py or ipython"""
+@unix_only const BINDIR = joinpath(PREFIX, "bin")
 """Returns the directory for the scripts files of a package. Attention on unix
- `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
- Use `scriptdir()` to ex. get numpy's f2py or ipython"""
-scriptsdir(package) = bindir(package)
+ `Conda.BINDIR` and `Conda.SCRIPTDIR` returns the same path while on windows it is two separate directories.
+ Use `Conda.SCRIPTDIR` to ex. get the folder for numpy's f2py or ipython"""
+@unix_only const SCRIPTDIR = joinpath(PREFIX, "bin")
 """Returns the directory for the binary files of a package. Attention on unix
- `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
- Use `scriptdir()` to ex. get numpy's f2py or ipython"""
-@windows_only function bindir(package) 
-    packages = _installed_packages_dict()
-    haskey(packages, package) || error("Package '$package' not found")
-    joinpath(PREFIX, "pkgs", packages[package][2], "Library", "bin")
-end
+ `Conda.BINDIR` and `Conda.SCRIPTDIR` returns the same path while on windows it is two separate directories.
+ Use `Conda.SCRIPTDIR` to ex. get the folder for numpy's f2py or ipython"""
+@windows_only  const BINDIR = joinpath(PREFIX, "Library", "bin")
 """Returns the directory for the scripts files of a package. Attention on unix
- `bindir` and `scriptsdir` returns the same path while on windows it is two separate directories.
- Use `scriptdir()` to ex. get numpy's f2py or ipython"""
-@windows_only function scriptsdir(package) 
-    packages = _installed_packages_dict()
-    haskey(packages, package) || error("Package '$package' not found")
-    joinpath(PREFIX, "pkgs", packages[package][2], "Scripts")
-end
+ `Conda.BINDIR` and `Conda.SCRIPTDIR` returns the same path while on windows it is two separate directories.
+ Use `Conda.SCRIPTDIR` to ex. get the folder for numpy's f2py or ipython"""
+@windows_only const SCRIPTDIR = joinpath(PREFIX, "Scripts")
 
-@unix_only const conda = joinpath(PREFIX, "bin", "conda")
-@windows_only const conda = joinpath(PREFIX, "Scripts", "conda")
+const conda = joinpath(SCRIPTDIR, "conda")
 
 CHANNELS = AbstractString[]
 additional_channels() = ["--channel " * channel for channel in CHANNELS]
