@@ -1,5 +1,5 @@
 # This file contains the necessary ingredients to create a PackageManager for BinDeps
-import BinDeps
+using BinDeps
 
 type Manager <: BinDeps.PackageManager
     packages::Vector{ASCIIString}
@@ -28,6 +28,8 @@ end
         joinpath(PREFIX, "pkgs", version(m.packages[1]), "Library", "bin")
     end
 end
+
+BinDeps.bindir(m::Manager, ::Any) = BINDIR
 
 BinDeps.provider(::Type{Manager}, packages::Vector{ASCIIString}; opts...) = Manager(packages)
 BinDeps.provider(::Type{Manager}, packages::ASCIIString; opts...) = Manager([packages])
