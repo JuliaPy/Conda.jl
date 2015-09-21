@@ -26,7 +26,3 @@ if already_installed
 end
 
 @test isfile(joinpath(Conda.SCRIPTDIR, "conda" * @windows ? ".exe": ""))
-
-Conda.add("jupyter=1.0.0")
-@test v"4.0.0" == convert(VersionNumber, chomp(readall(`$(joinpath(Conda.SCRIPTDIR, "jupyter-kernelspec")) --version`)))
-
