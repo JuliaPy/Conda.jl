@@ -54,7 +54,15 @@ BINDIR
 const conda = joinpath(SCRIPTDIR, "conda")
 
 CHANNELS = AbstractString[]
-additional_channels() = ["--channel " * channel for channel in CHANNELS]
+function additional_channels()
+    res = AbstractString[]
+    for channel in CHANNELS
+        push!(res, "--channel")
+        push!(res, channel)
+    end
+    return res
+end
+
 
 "Get the miniconda installer URL."
 function _installer_url()
