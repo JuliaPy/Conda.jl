@@ -46,6 +46,11 @@ SCRIPTDIR
 "Prefix for the executable files installed with the packages"
 BINDIR
 
+"Returns the directory for python"
+@windows_only const PYTHONDIR = PREFIX
+"Returns the directory for python"
+@unix_only const PYTHONDIR = BINDIR
+
 const conda = joinpath(SCRIPTDIR, "conda")
 
 CHANNELS = AbstractString[]
