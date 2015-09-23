@@ -26,3 +26,6 @@ if already_installed
 end
 
 @test isfile(joinpath(Conda.SCRIPTDIR, "conda" * @windows ? ".exe": ""))
+
+@test isfile(joinpath(Conda.PYTHONDIR, "python" * @windows ? ".exe": ""))
+
