@@ -43,7 +43,27 @@ const PYTHONDIR = @windows ? PREFIX : BINDIR
 
 const conda = joinpath(SCRIPTDIR, "conda")
 
+"""
+Use a cleaned up environment for the command `cmd`.
+
+Any environment variable starting by CONDA will interact with the run.
+"""
+function _set_conda_env(cmd)
+    env = copy(ENV)
+    to_remove = AbstractString[]
+    for var in keys(env)
+        if startswith(var, "CONDA")
+            push!(to_remove, var)
+        end
+    end
+    for var in to_remove
+        pop!(env, var)
+    end
+    setenv(cmd, env)
+end
+
 CHANNELS = AbstractString[]
+"Get the list of additional channels"
 function additional_channels()
     res = AbstractString[]
     for channel in CHANNELS
@@ -104,13 +124,13 @@ end
 function add(pkg::AbstractString)
     _install_conda()
     channels = additional_channels()
-    run(`$conda install -y $channels $pkg`)
+    run(_set_conda_env(`$conda install -y $channels $pkg`))
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString)
     _install_conda()
-    run(`$conda remove -y $pkg`)
+    run(_set_conda_env(`$conda remove -y $pkg`))
 end
 
 "Update all installed packages."
@@ -118,14 +138,14 @@ function update()
     # _install_conda() # run by _installed_packages()
     channels = additional_channels()
     for package in _installed_packages()
-        run(`$conda update $channels -y $package`)
+        run(_set_conda_env(`$conda update $channels -y $package`))
     end
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict()
     _install_conda()
-    packages = JSON.parse(readall(`$conda list --json`))
+    packages = JSON.parse(readall(_set_conda_env(`$conda list --json`)))
     # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
     # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
     regex = r"^(.*?)-((\d+\.){1,2}\d+)[^-]*-(.*)$"
@@ -147,7 +167,7 @@ _installed_packages() = keys(_installed_packages_dict())
 "List all installed packages to standard output."
 function list()
     _install_conda()
-    run(`$conda list`)
+    run(_set_conda_env(`$conda list`))
 end
 
 "Get the exact version of a package."
@@ -166,7 +186,7 @@ end
 function search(package::AbstractString)
     _install_conda()
     channels = additional_channels()
-    return collect(keys(JSON.parse(readall(`$conda search $channels $package --json`))))
+    return collect(keys(JSON.parse(readall(_set_conda_env(`$conda search $channels $package --json`)))))
 end
 
 "Check if a given package exists."
