@@ -32,24 +32,14 @@ using JSON
 "Prefix for installation of all the packages."
 const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
 
-@unix_only begin
-    const BINDIR = joinpath(PREFIX, "bin")
-    const SCRIPTDIR = joinpath(PREFIX, "bin")
-end
-@windows_only begin
-    const BINDIR = joinpath(PREFIX, "Library", "bin")
-    const SCRIPTDIR = joinpath(PREFIX, "Scripts")
-end
+"Prefix for the executable files installed with the packages"
+const BINDIR = @windows ? joinpath(PREFIX, "Library", "bin") : joinpath(PREFIX, "bin")
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
-SCRIPTDIR
-"Prefix for the executable files installed with the packages"
-BINDIR
+const SCRIPTDIR = @windows ? joinpath(PREFIX, "Scripts") : BINDIR
 
-"Returns the directory for python"
-@windows_only const PYTHONDIR = PREFIX
-"Returns the directory for python"
-@unix_only const PYTHONDIR = BINDIR
+"Prefix where the `python` command lives"
+const PYTHONDIR = @windows ? PREFIX : BINDIR
 
 const conda = joinpath(SCRIPTDIR, "conda")
 
