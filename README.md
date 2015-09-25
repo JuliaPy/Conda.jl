@@ -62,7 +62,7 @@ provides(Conda.Manager, "libnetcdf", netcdf, os=:Linux)
 
 ## Bugs and suggestions
 
-Conda have been tested on Linux and OS X, and the code for Windows is present but untested.
+Conda have been tested on Linux, OS X, and Windows. It should work on all these platforms.
 
 Please report any bug or suggestion as an [issue](https://github.com/Luthaf/Conda.jl/issues)
 
