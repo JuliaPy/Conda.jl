@@ -89,38 +89,43 @@ function _installer_url()
     return res
 end
 
-"Install miniconda"
-function _install_conda()
-    # Ensure PREFIX exists
-    mkpath(PREFIX)
-    info("Downloading miniconda installer ...")
-    @unix_only installer = joinpath(PREFIX, "installer.sh")
-    @windows_only installer = joinpath(PREFIX, "installer.exe")
-    download(_installer_url(), installer)
+"Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
+function _install_conda(force=false)
+    if force || !(@windows? isfile(Conda.conda * ".exe") : isexecutable(Conda.conda))
+        # Ensure PREFIX exists
+        mkpath(PREFIX)
+        info("Downloading miniconda installer ...")
+        @unix_only installer = joinpath(PREFIX, "installer.sh")
+        @windows_only installer = joinpath(PREFIX, "installer.exe")
+        download(_installer_url(), installer)
 
-    info("Installing miniconda ...")
-    @unix_only begin
-        chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
-        run(`$installer -b -f -p $PREFIX`)
-    end
-    @windows_only begin
-        run(`$installer /S  /AddToPath=0 /RegisterPython=0 /D=$PREFIX`)
+        info("Installing miniconda ...")
+        @unix_only begin
+            chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
+            run(`$installer -b -f -p $PREFIX`)
+        end
+        @windows_only begin
+            run(`$installer /S  /AddToPath=0 /RegisterPython=0 /D=$PREFIX`)
+        end
     end
 end
 
 "Install a new package."
 function add(pkg::AbstractString)
+    _install_conda()
     channels = additional_channels()
     run(`$conda install -y $channels $pkg`)
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString)
+    _install_conda()
     run(`$conda remove -y $pkg`)
 end
 
 "Update all installed packages."
 function update()
+    # _install_conda() # run by _installed_packages()
     channels = additional_channels()
     for package in _installed_packages()
         run(`$conda update $channels -y $package`)
@@ -129,6 +134,7 @@ end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict()
+    _install_conda()
     packages = JSON.parse(readall(`$conda list --json`))
     # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
     # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
@@ -150,11 +156,13 @@ _installed_packages() = keys(_installed_packages_dict())
 
 "List all installed packages to standard output."
 function list()
+    _install_conda()
     run(`$conda list`)
 end
 
 "Get the exact version of a package."
 function version(name::AbstractString)
+    _install_conda()
     packages = JSON.parse(readall(`$conda list --json`))
     for package in packages
         if startswith(package, name)
@@ -166,6 +174,7 @@ end
 
 "Search packages for a string"
 function search(package::AbstractString)
+    _install_conda()
     channels = additional_channels()
     return collect(keys(JSON.parse(readall(`$conda search $channels $package --json`))))
 end
