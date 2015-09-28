@@ -25,7 +25,13 @@ end
 @unix_only BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
 @windows_only begin
     function BinDeps.libdir(m::Manager, ::Any)
-        joinpath(PREFIX, "pkgs", version(m.packages[1]), "Library", "bin")
+        package = m.packages[1]
+        if package in _installed_packages()
+            joinpath(PREFIX, "pkgs", version(package), "Library", "bin")
+        else
+            # Return a default path, as we can not call version() on package.
+            joinpath(PREFIX, "lib")
+        end
     end
 end
 
