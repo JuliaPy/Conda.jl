@@ -189,13 +189,32 @@ function search(package::AbstractString)
     return collect(keys(JSON.parse(readall(_set_conda_env(`$conda search $channels $package --json`)))))
 end
 
+"Search a specific version of a package"
+function search(package::AbstractString,ver::AbstractString)
+    _install_conda()
+    channels = additional_channels()
+    ret=JSON.parse(readall(_set_conda_env(`$conda search $channels $package --json`)))
+    out=ASCIIString[]
+    for k in keys(ret)
+      for i in 1:length(ret[k])
+        ret[k][i]["version"]==ver && push!(out,k)
+      end
+    end
+    out
+end
+
 "Check if a given package exists."
 function exists(package::AbstractString)
-    if package in search(package)
+    if contains(package,"==")
+      pkg,ver=split(package,"==") #Remove version if provided
+      return pkg in search(pkg,ver)
+    else
+      if package in search(package)
         # Found exactly this package
         return true
-    else
+      else
         return false
+      end
     end
 end
 
