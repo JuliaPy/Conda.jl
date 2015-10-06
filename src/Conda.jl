@@ -1,3 +1,5 @@
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
+
 """
 The Conda module provides access to the [conda](http://conda.pydata.org/) packages
 manager. Its main purpose is to be used as a BinDeps provider, to install binary
@@ -62,7 +64,7 @@ function _set_conda_env(cmd)
     setenv(cmd, env)
 end
 
-CHANNELS = AbstractString[]
+const CHANNELS = UTF8String[]
 "Get the list of additional channels"
 function additional_channels()
     res = AbstractString[]
