@@ -1,3 +1,5 @@
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
+
 """
 The Conda module provides access to the [conda](http://conda.pydata.org/) packages
 manager. Its main purpose is to be used as a BinDeps provider, to install binary
