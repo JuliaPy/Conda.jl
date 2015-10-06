@@ -64,7 +64,7 @@ function _set_conda_env(cmd)
     setenv(cmd, env)
 end
 
-CHANNELS = AbstractString[]
+const CHANNELS = UTF8String[]
 "Get the list of additional channels"
 function additional_channels()
     res = AbstractString[]
