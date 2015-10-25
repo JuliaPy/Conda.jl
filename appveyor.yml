@@ -19,7 +19,8 @@ install:
 
 build_script:
   - IF EXIST .git\shallow (git fetch --unshallow)
-  - C:\projects\julia\bin\julia -e "versioninfo(); Pkg.clone(pwd(), \"Conda\"); Pkg.build(\"Conda\")"
-
+  # Test #17 by using ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\")
+  - C:\projects\julia\bin\julia -e "versioninfo(); p = joinpath(homedir(),\"Conda test home\"); mkdir(p); ENV[\"HOME\"]=p; Pkg.clone(pwd(), \"Conda\"); Pkg.build(\"Conda\")"
+  
 test_script:
-  - C:\projects\julia\bin\julia --check-bounds=yes -e "Pkg.test(\"Conda\")"
+  - C:\projects\julia\bin\julia --check-bounds=yes -e "ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\"); Pkg.test(\"Conda\")"
