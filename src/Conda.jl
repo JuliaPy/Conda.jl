@@ -104,9 +104,8 @@ end
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(force=false)
     @windows_only begin
-          try
-              run(`powershell "Get-Process Outlook"`)
-              error("""
+          if try success(`powershell "Get-Process Outlook"`); catch; false; end
+              error("""\n
               Outlook is running, running the Miniconda installer will crash it.
               Please stop Outlook, and restart the installation.
 
@@ -114,8 +113,6 @@ function _install_conda(force=false)
                     https://github.com/Luthaf/Conda.jl/issues/15
                     https://github.com/conda/conda/issues/1084
               """)
-          catch e
-              # Do nothing.
           end
     end
 
