@@ -162,17 +162,20 @@ end
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict()
     _install_conda()
-    packages = JSON.parse(readall(_set_conda_env(`$conda list --json`)))
-    # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
-    # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
-    regex = r"^(.*?)-((\d+\.){1,2}\d+)[^-]*-(.*)$"
-    package_dict = Dict{UTF8String, Any}()
-    for i in 1:length(packages)
-        m = match(regex, packages[i])
-        if m != nothing
-            package_dict[m.captures[1]] = (convert(VersionNumber, m.captures[2]), packages[i])
-        else
-            error("Failed parsing string: $(packages[i]). Please open an issue!")
+    package_dict = Dict{UTF8String, Tuple{VersionNumber, UTF8String}}()
+    for line in eachline(`$(Conda.conda) list --export`)
+        line = chomp(line)
+        if !startswith(line, "#")
+            name, version, build_string = split(line, "=")
+            # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
+            # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
+            version_number = join(split(version,".")[1:min(3,end)],".")
+            try
+                package_dict[name] = (convert(VersionNumber, version_number), line)
+            catch
+                package_dict[name] = (v"9999.9999.9999", line)
+                warn("Failed parsing string: \"$(version_number)\" to a version number. Please open an issue!")
+            end
         end
     end
     return package_dict
