@@ -130,9 +130,14 @@ function _install_conda(force=false)
             run(`$installer -b -f -p $PREFIX`)
         end
         @windows_only begin
-            # Remove the error condition when https://github.com/JuliaLang/julia/issues/13776 is fixed and the change implemented.
-            match(r" {2,}", "")!=nothing && error("The installer will fail when the path=\"$PREFIX\" contains two consecutive spaces")
-            run(`$installer /S /AddToPath=0 /RegisterPython=0 $(split("/D=$PREFIX"))`)
+            if VERSION >= v"0.5.0-dev+8873" # Julia PR #13780
+                run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
+            else
+                # Workaround a bug in command-line argument parsing, see
+                # https://github.com/Luthaf/Conda.jl/issues/17
+                match(r" {2,}", "")!=nothing && error("The installer will fail when the path=\"$PREFIX\" contains two consecutive spaces")
+                run(`$installer /S /AddToPath=0 /RegisterPython=0 $(split("/D=$PREFIX"))`)
+            end
         end
     end
 end
