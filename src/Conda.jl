@@ -116,7 +116,7 @@ function _install_conda(force=false)
           end
     end
 
-    if force || !(@windows? isfile(Conda.conda * ".exe") : isexecutable(Conda.conda))
+    if force || !(@windows? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
         # Ensure PREFIX exists
         mkpath(PREFIX)
         info("Downloading miniconda installer ...")
