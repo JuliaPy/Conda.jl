@@ -10,14 +10,21 @@ While other binary providers like [Hombrew.jl](https://github.com/JuliaLang/Home
 Conda.jl is a cross-platform alternative. It can also be used without administrator rights,
 in contrast to the current Linux-based providers.
 
+As such, `Conda.jl` primary audience is Julia packages developers who have a dependency on 
+some native library.
+
 `conda` is a package manager which started as the binary package manager
 for the Anaconda Python distribution, but it also provides arbitrary packages.
-Instead of the full Anaconda distribution, Conda.jl uses the miniconda Python environment,
+Instead of the full Anaconda distribution, `Conda.jl` uses the miniconda Python environment,
 which only includes `conda` and its dependencies.
 
-You can install it by running `Pkg.add("Conda")` at the Julia prompt.
+`Conda.jl` is **NOT** an alternative Julia package manager, nor a way to manage Python
+installations. It will not use any pre-existing Anaconda or Python installation on 
+your machine.
 
 ## Basic functionality
+
+You can install this package by running `Pkg.add("Conda")` at the Julia prompt.
 
 Basic package managing utilities are provided in the Conda module:
 
