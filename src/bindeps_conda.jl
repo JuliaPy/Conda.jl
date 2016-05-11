@@ -2,7 +2,7 @@
 using BinDeps
 
 type Manager <: BinDeps.PackageManager
-    packages::Vector{ASCIIString}
+    packages::Vector{Compat.ASCIIString}
 end
 
 function Base.show(io::IO, manager::Manager)
@@ -37,8 +37,8 @@ end
 
 BinDeps.bindir(m::Manager, ::Any) = BINDIR
 
-BinDeps.provider(::Type{Manager}, packages::Vector{ASCIIString}; opts...) = Manager(packages)
-BinDeps.provider(::Type{Manager}, packages::ASCIIString; opts...) = Manager([packages])
+BinDeps.provider{T<:String}(::Type{Manager}, packages::Vector{T}; opts...) = Manager(packages)
+BinDeps.provider(::Type{Manager}, packages::String; opts...) = Manager([packages])
 
 function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::Manager, opts)
     pkgs = manager.packages

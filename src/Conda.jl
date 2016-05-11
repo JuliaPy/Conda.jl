@@ -29,6 +29,7 @@ provides(Conda.Manager, "libnetcdf", netcdf)
 """
 module Conda
 using Compat
+import Compat.String
 using JSON
 
 "Prefix for installation of all the packages."
@@ -64,7 +65,7 @@ function _set_conda_env(cmd)
     setenv(cmd, env)
 end
 
-const CHANNELS = UTF8String[]
+const CHANNELS = Compat.UTF8String[]
 "Get the list of additional channels"
 function additional_channels()
     res = AbstractString[]
@@ -167,7 +168,7 @@ end
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict()
     _install_conda()
-    package_dict = Dict{UTF8String, Tuple{VersionNumber, UTF8String}}()
+    package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
     for line in eachline(`$(Conda.conda) list --export`)
         line = chomp(line)
         if !startswith(line, "#")
@@ -198,7 +199,7 @@ end
 "Get the exact version of a package."
 function version(name::AbstractString)
     _install_conda()
-    packages = JSON.parse(readall(`$conda list --json`))
+    packages = JSON.parse(readstring(`$conda list --json`))
     for package in packages
         if startswith(package, name)
             return package
@@ -211,15 +212,15 @@ end
 function search(package::AbstractString)
     _install_conda()
     channels = additional_channels()
-    return collect(keys(JSON.parse(readall(_set_conda_env(`$conda search $channels $package --json`)))))
+    return collect(keys(JSON.parse(readstring(_set_conda_env(`$conda search $channels $package --json`)))))
 end
 
 "Search a specific version of a package"
 function search(package::AbstractString,ver::AbstractString)
     _install_conda()
     channels = additional_channels()
-    ret=JSON.parse(readall(_set_conda_env(`$conda search $channels $package --json`)))
-    out=ASCIIString[]
+    ret=JSON.parse(readstring(_set_conda_env(`$conda search $channels $package --json`)))
+    out = Compat.ASCIIString[]
     for k in keys(ret)
       for i in 1:length(ret[k])
         ret[k][i]["version"]==ver && push!(out,k)
