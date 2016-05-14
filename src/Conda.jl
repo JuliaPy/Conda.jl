@@ -11,6 +11,9 @@ The main functions in Conda are:
 - `Conda.rm(package)`: remove (uninstall) a package;
 - `Conda.update()`: update all installed packages to the latest version;
 - `Conda.list()`: list all installed packages.
+- `Conda.add_channel(channel)`: add a channel to the list of channels;
+- `Conda.channels()`: get the current list of channels;
+- `Conda.rm_channel(channel)`: remove a channel from the list of channels;
 
 To use Conda as a binary provider for BinDeps, the `Conda.Manager` type is proposed. A
 small example looks like this:
@@ -22,8 +25,8 @@ using BinDeps
 netcdf = library_dependency("netcdf", aliases = ["libnetcdf","libnetcdf4"])
 
 using Conda
-# Use alternative conda channel.
-push!(Conda.CHANNELS, "https://conda.binstar.org/<username>")
+#  Use alternative conda channel.
+Conda.add_channel("my_channel")
 provides(Conda.Manager, "libnetcdf", netcdf)
 ```
 """
@@ -44,7 +47,11 @@ const SCRIPTDIR = @windows ? joinpath(PREFIX, "Scripts") : BINDIR
 "Prefix where the `python` command lives"
 const PYTHONDIR = @windows ? PREFIX : BINDIR
 
+"Path to the `conda` binary"
 const conda = joinpath(SCRIPTDIR, "conda")
+
+"Path to the condarc file"
+const CONDARC = joinpath(PREFIX, "condarc-julia")
 
 """
 Use a cleaned up environment for the command `cmd`.
@@ -62,20 +69,9 @@ function _set_conda_env(cmd)
     for var in to_remove
         pop!(env, var)
     end
+    env["CONDARC"] = CONDARC
     setenv(cmd, env)
 end
-
-const CHANNELS = Compat.UTF8String[]
-"Get the list of additional channels"
-function additional_channels()
-    res = AbstractString[]
-    for channel in CHANNELS
-        push!(res, "--channel")
-        push!(res, channel)
-    end
-    return res
-end
-
 
 "Get the miniconda installer URL."
 function _installer_url()
@@ -146,8 +142,7 @@ end
 "Install a new package."
 function add(pkg::AbstractString)
     _install_conda()
-    channels = additional_channels()
-    run(_set_conda_env(`$conda install -y $channels $pkg`))
+    run(_set_conda_env(`$conda install -y $pkg`))
 end
 
 "Uninstall a package."
@@ -158,10 +153,9 @@ end
 
 "Update all installed packages."
 function update()
-    # _install_conda() # run by _installed_packages()
-    channels = additional_channels()
+    _install_conda()
     for package in _installed_packages()
-        run(_set_conda_env(`$conda update $channels -y $package`))
+        run(_set_conda_env(`$conda update -y $package`))
     end
 end
 
@@ -211,15 +205,13 @@ end
 "Search packages for a string"
 function search(package::AbstractString)
     _install_conda()
-    channels = additional_channels()
-    return collect(keys(JSON.parse(readstring(_set_conda_env(`$conda search $channels $package --json`)))))
+    return collect(keys(JSON.parse(readstring(_set_conda_env(`$conda search $package --json`)))))
 end
 
 "Search a specific version of a package"
-function search(package::AbstractString,ver::AbstractString)
+function search(package::AbstractString, ver::AbstractString)
     _install_conda()
-    channels = additional_channels()
-    ret=JSON.parse(readstring(_set_conda_env(`$conda search $channels $package --json`)))
+    ret=JSON.parse(readstring(_set_conda_env(`$conda search $package --json`)))
     out = Compat.ASCIIString[]
     for k in keys(ret)
       for i in 1:length(ret[k])
@@ -242,6 +234,29 @@ function exists(package::AbstractString)
         return false
       end
     end
+end
+
+"Get the list of channels used to search packages"
+function channels()
+    _install_conda()
+    ret=JSON.parse(readstring(_set_conda_env(`$conda config --get channels --json`)))
+    if haskey(ret["get"], "channels")
+        return collect(Compat.ASCIIString, ret["get"]["channels"])
+    else
+        return Compat.ASCIIString[]
+    end
+end
+
+"Add a channel to the list of channels"
+function add_channel(channel::Compat.String)
+    _install_conda()
+    run(_set_conda_env(`$conda config --add channels $channel --force`))
+end
+
+"Remove a channel from the list of channels"
+function rm_channel(channel::Compat.String)
+    _install_conda()
+    run(_set_conda_env(`$conda config --remove channels $channel --force`))
 end
 
 include("bindeps_conda.jl")

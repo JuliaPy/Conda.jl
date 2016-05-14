@@ -29,3 +29,12 @@ end
 
 @test isfile(joinpath(Conda.PYTHONDIR, "python" * @windows ? ".exe": ""))
 
+channels = Conda.channels()
+@test (isempty(channels) || channels == ["defaults"])
+
+Conda.add_channel("foo")
+@test Conda.channels() == ["foo", "defaults"]
+
+Conda.rm_channel("foo")
+channels = Conda.channels()
+@test (isempty(channels) || channels == ["defaults"])
