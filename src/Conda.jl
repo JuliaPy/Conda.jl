@@ -79,7 +79,7 @@ end
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "http://repo.continuum.io/miniconda/Miniconda-3.9.1-"
+    res = "http://repo.continuum.io/miniconda/Miniconda-latest-"
     if OS_NAME == :Darwin
         res *= "MacOSX"
     elseif OS_NAME in [:Linux, :Windows]
