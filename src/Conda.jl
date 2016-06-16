@@ -132,10 +132,13 @@ function _install_conda(force=false)
             else
                 # Workaround a bug in command-line argument parsing, see
                 # https://github.com/Luthaf/Conda.jl/issues/17
-                match(r" {2,}", "")!=nothing && error("The installer will fail when the path=\"$PREFIX\" contains two consecutive spaces")
+                if match(r" {2,}", "") != nothing
+                    error("The installer will fail when the path=\"$PREFIX\" contains two consecutive spaces")
+                end
                 run(`$installer /S /AddToPath=0 /RegisterPython=0 $(split("/D=$PREFIX"))`)
             end
         end
+        Conda.add_channel("defaults")
     end
 end
 
@@ -224,7 +227,7 @@ end
 "Check if a given package exists."
 function exists(package::AbstractString)
     if contains(package,"==")
-      pkg,ver=split(package,"==") #Remove version if provided
+      pkg,ver=split(package,"==")  # Remove version if provided
       return pkg in search(pkg,ver)
     else
       if package in search(package)
