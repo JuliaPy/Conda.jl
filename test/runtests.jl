@@ -1,13 +1,16 @@
 using Conda
 using Base.Test
+using Compat
 
 already_installed = "curl" in Conda._installed_packages()
 
 @test Conda.exists("curl")
 Conda.add("curl")
 
-@unix_only curl_path = joinpath(Conda.PREFIX, "bin", "curl-config")
-@windows_only begin
+if is_unix()
+    curl_path = joinpath(Conda.PREFIX, "bin", "curl-config")
+end
+if is_windows()
     using BinDeps
     manager = Conda.Manager(["curl"])
     curl_libpath = BinDeps.libdir(manager, "")
@@ -19,15 +22,17 @@ end
 @test isfile(joinpath(Conda.BINDIR, basename(curl_path)))
 
 Conda.rm("curl")
-@unix_only @test !isfile(curl_path)
+if is_unix()
+    @test !isfile(curl_path)
+end
 
 if already_installed
     Conda.add("curl")
 end
 
-@test isfile(joinpath(Conda.SCRIPTDIR, "conda" * @windows ? ".exe": ""))
+@test isfile(joinpath(Conda.SCRIPTDIR, "conda" * (is_windows() ? ".exe": "")))
 
-@test isfile(joinpath(Conda.PYTHONDIR, "python" * @windows ? ".exe": ""))
+@test isfile(joinpath(Conda.PYTHONDIR, "python" * (is_windows() ? ".exe": "")))
 
 channels = Conda.channels()
 @test (isempty(channels) || channels == ["defaults"])

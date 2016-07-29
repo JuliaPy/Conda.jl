@@ -22,8 +22,10 @@ function BinDeps.package_available(manager::Manager)
     return true
 end
 
-@unix_only BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
-@windows_only begin
+if is_unix()
+    BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
+end
+if is_windows()
     function BinDeps.libdir(m::Manager, ::Any)
         package = m.packages[1]
         if package in _installed_packages()
