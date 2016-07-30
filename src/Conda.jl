@@ -39,13 +39,13 @@ using JSON
 const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
 
 "Prefix for the executable files installed with the packages"
-const BINDIR = @windows ? joinpath(PREFIX, "Library", "bin") : joinpath(PREFIX, "bin")
+const BINDIR = is_windows() ? joinpath(PREFIX, "Library", "bin") : joinpath(PREFIX, "bin")
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
-const SCRIPTDIR = @windows ? joinpath(PREFIX, "Scripts") : BINDIR
+const SCRIPTDIR = is_windows() ? joinpath(PREFIX, "Scripts") : BINDIR
 
 "Prefix where the `python` command lives"
-const PYTHONDIR = @windows ? PREFIX : BINDIR
+const PYTHONDIR = is_windows() ? PREFIX : BINDIR
 
 "Path to the `conda` binary"
 const conda = joinpath(SCRIPTDIR, "conda")
@@ -76,31 +76,23 @@ end
 "Get the miniconda installer URL."
 function _installer_url()
     res = "http://repo.continuum.io/miniconda/Miniconda-latest-"
-    if OS_NAME == :Darwin
+    if is_apple()
         res *= "MacOSX"
-    elseif OS_NAME in [:Linux, :Windows]
-        res *= string(OS_NAME)
+    elseif is_linux()
+        res *= "Linux"
+    elseif is_windows()
+        res *= "Windows"
     else
         error("Unsuported OS.")
     end
-
-    if WORD_SIZE == 64
-        res *= "-x86_64"
-    else
-        res *= "-x86"
-    end
-
-    if OS_NAME in [:Darwin, :Linux]
-        res *= ".sh"
-    else
-        res *= ".exe"
-    end
+    res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
+    res *= is_windows() ? ".exe" : ".sh"
     return res
 end
 
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(force=false)
-    @windows_only begin
+    if is_windows()
           if try success(pipeline(`powershell "Get-Process Outlook"`, stdout=DevNull, stderr=DevNull)); catch; false; end
               error("""\n
               Outlook is running, running the Miniconda installer will crash it.
@@ -113,20 +105,24 @@ function _install_conda(force=false)
           end
     end
 
-    if force || !(@windows? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
+    if force || !(is_windows() ? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
         # Ensure PREFIX exists
         mkpath(PREFIX)
         info("Downloading miniconda installer ...")
-        @unix_only installer = joinpath(PREFIX, "installer.sh")
-        @windows_only installer = joinpath(PREFIX, "installer.exe")
+        if is_unix()
+            installer = joinpath(PREFIX, "installer.sh")
+        end
+        if is_windows()
+            installer = joinpath(PREFIX, "installer.exe")
+        end
         download(_installer_url(), installer)
 
         info("Installing miniconda ...")
-        @unix_only begin
+        if is_unix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
             run(`$installer -b -f -p $PREFIX`)
         end
-        @windows_only begin
+        if is_windows()
             if VERSION >= v"0.5.0-dev+8873" # Julia PR #13780
                 run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
             else
