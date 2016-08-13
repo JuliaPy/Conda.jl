@@ -54,11 +54,11 @@ const conda = joinpath(SCRIPTDIR, "conda")
 const CONDARC = joinpath(PREFIX, "condarc-julia")
 
 """
-Use a cleaned up environment for the command `cmd`.
+Get a cleaned up environment for the command `cmd`.
 
 Any environment variable starting by CONDA will interact with the run.
 """
-function _set_conda_env(cmd)
+function _get_conda_env()
     env = copy(ENV)
     to_remove = AbstractString[]
     for var in keys(env)
@@ -70,7 +70,16 @@ function _set_conda_env(cmd)
         pop!(env, var)
     end
     env["CONDARC"] = CONDARC
-    setenv(cmd, env)
+    env
+end
+
+"""
+Use a cleaned up environment for the command `cmd`.
+
+Any environment variable starting by CONDA will interact with the run.
+"""
+function _set_conda_env(cmd)
+    setenv(cmd, _get_conda_env())
 end
 
 "Get the miniconda installer URL."
@@ -143,7 +152,9 @@ end
 "Install a new package."
 function add(pkg::AbstractString)
     _install_conda()
-    run(_set_conda_env(`$conda install -y $pkg`))
+    withenv(_get_conda_env()...) do
+        run(`$conda install -y $pkg`)
+    end
 end
 
 "Uninstall a package."
