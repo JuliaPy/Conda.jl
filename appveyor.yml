@@ -1,7 +1,5 @@
 environment:
   matrix:
-  - JULIAVERSION: "julialang/bin/winnt/x86/0.3/julia-0.3-latest-win32.exe"
-  - JULIAVERSION: "julialang/bin/winnt/x64/0.3/julia-0.3-latest-win64.exe"
   - JULIAVERSION: "julialang/bin/winnt/x86/0.4/julia-0.4-latest-win32.exe"
   - JULIAVERSION: "julialang/bin/winnt/x64/0.4/julia-0.4-latest-win64.exe"
   - JULIAVERSION: "julianightlies/bin/winnt/x86/julia-latest-win32.exe"
@@ -23,6 +21,6 @@ build_script:
   - IF EXIST .git\shallow (git fetch --unshallow)
   # Test #17 by using ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\")
   - C:\projects\julia\bin\julia -e "versioninfo(); p = joinpath(homedir(),\"Conda test home\"); mkdir(p); ENV[\"HOME\"]=p; Pkg.clone(pwd(), \"Conda\"); Pkg.build(\"Conda\")"
-  
+
 test_script:
   - C:\projects\julia\bin\julia --check-bounds=yes -e "ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\"); Pkg.test(\"Conda\")"
