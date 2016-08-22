@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+__precompile__()
 
 """
 The Conda module provides access to the [conda](http://conda.pydata.org/) packages
@@ -90,15 +90,17 @@ function _installer_url()
     return res
 end
 
+is_windows() && include("outlook.jl")
+
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(force=false)
     if is_windows()
-          if try success(pipeline(`powershell "Get-Process Outlook"`, stdout=DevNull, stderr=DevNull)); catch; false; end
+          if is_outlook_running()
               error("""\n
-              Outlook is running, running the Miniconda installer will crash it.
-              Please stop Outlook, and restart the installation.
+              Outlook is running, and running the Miniconda installer will crash it.
+              Please quit Outlook and then restart the installation.
 
-              For more informations, see
+              For more information, see:
                     https://github.com/Luthaf/Conda.jl/issues/15
                     https://github.com/conda/conda/issues/1084
               """)
