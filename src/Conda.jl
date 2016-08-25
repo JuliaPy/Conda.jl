@@ -53,12 +53,19 @@ const conda = joinpath(SCRIPTDIR, "conda")
 "Path to the condarc file"
 const CONDARC = joinpath(PREFIX, "condarc-julia")
 
+"Run `cmd` with environment."
+function run_with_env(cmd)
+    withenv(_get_conda_env()...) do
+        run(cmd)
+    end
+end
+
 """
-Use a cleaned up environment for the command `cmd`.
+Get a cleaned up environment for the command `cmd`.
 
 Any environment variable starting by CONDA will interact with the run.
 """
-function _set_conda_env(cmd)
+function _get_conda_env()
     env = copy(ENV)
     to_remove = AbstractString[]
     for var in keys(env)
@@ -70,7 +77,16 @@ function _set_conda_env(cmd)
         pop!(env, var)
     end
     env["CONDARC"] = CONDARC
-    setenv(cmd, env)
+    env
+end
+
+"""
+Use a cleaned up environment for the command `cmd`.
+
+Any environment variable starting by CONDA will interact with the run.
+"""
+function _set_conda_env(cmd)
+    setenv(cmd, _get_conda_env())
 end
 
 "Get the miniconda installer URL."
@@ -143,20 +159,20 @@ end
 "Install a new package."
 function add(pkg::AbstractString)
     _install_conda()
-    run(_set_conda_env(`$conda install -y $pkg`))
+    run_with_env(`$conda install -y $pkg`)
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString)
     _install_conda()
-    run(_set_conda_env(`$conda remove -y $pkg`))
+    run_with_env(`$conda remove -y $pkg`)
 end
 
 "Update all installed packages."
 function update()
     _install_conda()
     for package in _installed_packages()
-        run(_set_conda_env(`$conda update -y $package`))
+        run_with_env(`$conda update -y $package`)
     end
 end
 
@@ -188,7 +204,7 @@ _installed_packages() = keys(_installed_packages_dict())
 "List all installed packages to standard output."
 function list()
     _install_conda()
-    run(_set_conda_env(`$conda list`))
+    run_with_env(`$conda list`)
 end
 
 "Get the exact version of a package."
@@ -251,13 +267,13 @@ end
 "Add a channel to the list of channels"
 function add_channel(channel::Compat.String)
     _install_conda()
-    run(_set_conda_env(`$conda config --add channels $channel --force`))
+    run_with_env(`$conda config --add channels $channel --force`)
 end
 
 "Remove a channel from the list of channels"
 function rm_channel(channel::Compat.String)
     _install_conda()
-    run(_set_conda_env(`$conda config --remove channels $channel --force`))
+    run_with_env(`$conda config --remove channels $channel --force`)
 end
 
 include("bindeps_conda.jl")
