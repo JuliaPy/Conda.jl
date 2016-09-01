@@ -196,7 +196,7 @@ function version(name::AbstractString)
     _install_conda()
     packages = JSON.parse(readstring(`$conda list --json`))
     for package in packages
-        if startswith(package, name)
+        if startswith(package, name) || ismatch(Regex("::$name"), package)
             return package
         end
     end
