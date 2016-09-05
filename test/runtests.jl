@@ -3,18 +3,23 @@ using BinDeps
 using Base.Test
 using Compat
 
+# Save previous state of the Conda installation
 CURL_ALREADY_INSTALLED = false
 PREVIOUS_CHANNELS = []
+PREVIOUS_PACKAGES = []
 
+"Save any state in the Conda installation"
 function setup()
-    CURL_ALREADY_INSTALLED = "curl" in Conda._installed_packages()
-    PREVIOUS_CHANNELS = Conda.channels()
+    global CURL_ALREADY_INSTALLED = "curl" in Conda._installed_packages()
+    global PREVIOUS_PACKAGES = Conda._installed_packages_dict()
+    global PREVIOUS_CHANNELS = Conda.channels()
     for channel in PREVIOUS_CHANNELS
         Conda.rm_channel(channel)
     end
     Conda.add_channel("defaults")
 end
 
+"Restore the state of the Conda installation"
 function teardown()
     if CURL_ALREADY_INSTALLED
         Conda.add("curl")
@@ -22,6 +27,14 @@ function teardown()
 
     for channel in PREVIOUS_CHANNELS
         Conda.add_channel(channel)
+    end
+
+    installed = Conda._installed_packages()
+
+    for (name, (_, package)) in PREVIOUS_PACKAGES
+        if !(name in installed)
+            Conda.add(package)
+        end
     end
 end
 
