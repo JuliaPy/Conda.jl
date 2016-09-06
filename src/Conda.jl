@@ -34,6 +34,12 @@ module Conda
 using Compat
 import Compat.String
 using JSON
+include("../deps/deps.jl")
+
+if !isdir(default_dir)
+    # Ensure default_dir exists
+    mkpath(default_dir)
+end
 
 type Environment
     path::ASCIIString
@@ -47,11 +53,11 @@ type Environment
         if (length(string(name)) == 0)
             return error("Environment name should be non empty.")
         end
-        return new(abspath(dirname(@__FILE__), "..", "deps", "usr", "envs", string(name)))
+        return new(joinpath(default_dir, "envs", string(name)))
     end
 end
 
-RootEnv = Environment(abspath(dirname(@__FILE__), "..", "deps", "usr"))
+RootEnv = Environment(default_dir)
 
 "Prefix for installation of the environment"
 function prefix(env::Environment)
@@ -143,8 +149,6 @@ function _install_conda(force::Bool=false, env::Environment=RootEnv)
     end
 
     if force || !(is_windows() ? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
-        # Ensure PREFIX exists
-        mkpath(PREFIX)
         info("Downloading miniconda installer ...")
         if is_unix()
             installer = joinpath(PREFIX, "installer.sh")
