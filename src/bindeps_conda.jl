@@ -36,12 +36,7 @@ if is_windows()
     function BinDeps.libdir{T}(m::ManagerType{T}, ::Any)
         package = m.packages[1]
         env = Environment(m)
-        if package in _installed_packages(env)
-            joinpath(prefix(env), "pkgs", version(package, env), "Library", "bin")
-        else
-            # Return a default path, as we can not call version() on package.
-            joinpath(prefix(env), "lib")
-        end
+        joinpath(prefix(env), "Library", "bin")]
     end
 end
 
