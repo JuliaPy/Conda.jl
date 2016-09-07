@@ -106,9 +106,7 @@ function _set_conda_env(cmd, env::Environment=RootEnv)
     for var in to_remove
         pop!(env_hash, var)
     end
-    join_char = is_windows() ? ";" : ":"
     env_hash["CONDARC"] = joinpath(prefix(env), "condarc-julia")
-    env_hash["PATH"] = scriptdir(env) * join_char * env_hash["PATH"]
     env_hash["CONDA_PREFIX"] = prefix(env)
     env_hash["CONDA_DEFAULT_ENV"] = prefix(env)
     setenv(cmd, env_hash)
@@ -179,27 +177,27 @@ function _install_conda(force::Bool=false, env::Environment=RootEnv)
     end
     if !isdir(prefix(env))
         # conda doesn't allow totally empty environments. using zlib as the default package
-        run(_set_conda_env(`conda create -p $(prefix(env)) zlib`, RootEnv))
+        run(_set_conda_env(`$(conda_bin(RootEnv)) create -y -p $(prefix(env)) zlib`, RootEnv))
     end
 end
 
 "Install a new package."
 function add(pkg::AbstractString, env::Environment=RootEnv)
     _install_conda(false, env)
-    run(_set_conda_env(`conda install -y $pkg`, env))
+    run(_set_conda_env(`$(conda_bin(env)) install -y $pkg`, env))
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString, env::Environment=RootEnv)
     _install_conda(false, env)
-    run(_set_conda_env(`conda remove -y $pkg`, env))
+    run(_set_conda_env(`$(conda_bin(env)) remove -y $pkg`, env))
 end
 
 "Update all installed packages."
 function update(env::Environment=RootEnv)
     _install_conda(false, env)
     for package in _installed_packages()
-        run(_set_conda_env(`conda update -y $package`, env))
+        run(_set_conda_env(`$(conda_bin(env)) update -y $package`, env))
     end
 end
 
@@ -207,7 +205,7 @@ end
 function  _installed_packages_dict(env::Environment=RootEnv)
     _install_conda(false, env)
     package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
-    for line in eachline(_set_conda_env(`conda list --export`, env))
+    for line in eachline(_set_conda_env(`$(conda_bin(env)) list --export`, env))
         line = chomp(line)
         if !startswith(line, "#")
             name, version, build_string = split(line, "=")
@@ -231,13 +229,13 @@ _installed_packages(env::Environment=RootEnv) = keys(_installed_packages_dict(en
 "List all installed packages to standard output."
 function list(env::Environment=RootEnv)
     _install_conda(false, env)
-    run(_set_conda_env(`conda list`, env))
+    run(_set_conda_env(`$(conda_bin(env)) list`, env))
 end
 
 "Get the exact version of a package."
 function version(name::AbstractString, env::Environment=RootEnv)
     _install_conda(false, env)
-    packages = JSON.parse(readstring(_set_conda_env(`conda list --json`, env)))
+    packages = JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) list --json`, env)))
     for package in packages
         if startswith(package, name) || ismatch(Regex("::$name"), package)
             return package
@@ -249,13 +247,13 @@ end
 "Search packages for a string"
 function search(package::AbstractString, env::Environment=RootEnv)
     _install_conda(false, env)
-    return collect(keys(JSON.parse(readstring(_set_conda_env(`conda search $package --json`, env)))))
+    return collect(keys(JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) search $package --json`, env)))))
 end
 
 "Search a specific version of a package"
 function search(package::AbstractString, ver::AbstractString, env::Environment=RootEnv)
     _install_conda(false, env)
-    ret=JSON.parse(readstring(_set_conda_env(`conda search $package --json`, env)))
+    ret=JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) search $package --json`, env)))
     out = Compat.ASCIIString[]
     for k in keys(ret)
       for i in 1:length(ret[k])
@@ -283,7 +281,7 @@ end
 "Get the list of channels used to search packages"
 function channels(env::Environment=RootEnv)
     _install_conda(false, env)
-    ret=JSON.parse(readstring(_set_conda_env(`conda config --get channels --json`, env)))
+    ret=JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) config --get channels --json`, env)))
     if haskey(ret["get"], "channels")
         return collect(Compat.ASCIIString, ret["get"]["channels"])
     else
@@ -294,13 +292,13 @@ end
 "Add a channel to the list of channels"
 function add_channel(channel::Compat.String, env::Environment=RootEnv)
     _install_conda(false, env)
-    run(_set_conda_env(`conda config --add channels $channel --force`, env))
+    run(_set_conda_env(`$(conda_bin(env)) config --add channels $channel --force`, env))
 end
 
 "Remove a channel from the list of channels"
 function rm_channel(channel::Compat.String, env::Environment=RootEnv)
     _install_conda(false, env)
-    run(_set_conda_env(`conda config --remove channels $channel --force`, env))
+    run(_set_conda_env(`$(conda_bin(env)) config --remove channels $channel --force`, env))
 end
 
 include("bindeps_conda.jl")
