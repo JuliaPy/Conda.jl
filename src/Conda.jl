@@ -72,24 +72,24 @@ end
 const BINDIR = bin_dir(RootEnv)
 
 "Prefix for the shared libraries installed with the packages"
-function bin_dir(env::Environment)
+function lib_dir(env::Environment)
     return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
 end
 const LIBDIR = lib_dir(RootEnv)
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
-function scriptdir(env::Environment)
+function script_dir(env::Environment)
     return is_windows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
 end
-const SCRIPTDIR = scriptdir(RootEnv)
+const SCRIPTDIR = script_dir(RootEnv)
 
 "Prefix where the `python` command lives"
-function pythondir(env::Environment)
+function python_dir(env::Environment)
     return is_windows() ? prefix(env) : bin_dir(env)
 end
-const PYTHONDIR = pythondir(RootEnv)
+const PYTHONDIR = python_dir(RootEnv)
 
-conda_bin(env::Environment) = joinpath(scriptdir(env), "conda")
+conda_bin(env::Environment) = joinpath(script_dir(env), "conda")
 const conda = conda_bin(RootEnv)
 
 "Path to the condarc file"

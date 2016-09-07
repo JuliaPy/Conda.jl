@@ -3,82 +3,43 @@ using BinDeps
 using Base.Test
 using Compat
 
-# Save previous state of the Conda installation
-CURL_ALREADY_INSTALLED = false
-PREVIOUS_CHANNELS = []
-PREVIOUS_PACKAGES = []
-
-"Save any state in the Conda installation"
-function setup()
-    global CURL_ALREADY_INSTALLED = "curl" in Conda._installed_packages()
-    global PREVIOUS_PACKAGES = Conda._installed_packages_dict()
-    global PREVIOUS_CHANNELS = Conda.channels()
-    for channel in PREVIOUS_CHANNELS
-        Conda.rm_channel(channel)
-    end
-    Conda.add_channel("defaults")
-end
-
-"Restore the state of the Conda installation"
-function teardown()
-    if CURL_ALREADY_INSTALLED
-        Conda.add("curl")
-    end
-
-    for channel in PREVIOUS_CHANNELS
-        Conda.add_channel(channel)
-    end
-
-    installed = Conda._installed_packages()
-
-    for (name, (_, package)) in PREVIOUS_PACKAGES
-        if !(name in installed)
-            Conda.add(package)
-        end
-    end
-end
-
 function main()
-    setup()
-
-    @test Conda.exists("curl")
-    Conda.add("curl")
+    env = Conda.Environment(:test_conda_jl)
+    @test Conda.exists("curl", env)
+    Conda.add("curl", env)
 
     if is_unix()
-        curl_path = joinpath(Conda.PREFIX, "bin", "curl-config")
+        curl_path = joinpath(Conda.prefix(env), "bin", "curl-config")
     end
     if is_windows()
-        manager = Conda.Manager(["curl"])
-        curl_libpath = BinDeps.libdir(manager, "")
+        manager = Conda.libdir(env)
         curl_path = joinpath(curl_libpath, "curl.exe")
     end
 
     @test isfile(curl_path)
 
-    @test isfile(joinpath(Conda.BINDIR, basename(curl_path)))
+    @test isfile(joinpath(Conda.bin_dir(env), basename(curl_path)))
 
-    Conda.rm("curl")
+    Conda.rm("curl", env)
     if is_unix()
         @test !isfile(curl_path)
     end
 
-    @test isfile(joinpath(Conda.SCRIPTDIR, "conda" * (is_windows() ? ".exe": "")))
-
-    @test isfile(joinpath(Conda.PYTHONDIR, "python" * (is_windows() ? ".exe": "")))
+    @test isfile(joinpath(Conda.script_dir(env), "conda" * (is_windows() ? ".exe": "")))
+    Conda.add("python", env)
+    @test isfile(joinpath(Conda.python_dir(env), "python" * (is_windows() ? ".exe": "")))
 
     channels = Conda.channels()
     @test channels == ["defaults"]
 
-    Conda.add_channel("foo")
-    @test Conda.channels() == ["foo", "defaults"]
+    Conda.add_channel("foo", env)
+    @test Conda.channels(env) == ["foo", "defaults"]
     # Testing that calling the function twice do not fail
-    Conda.add_channel("foo")
+    Conda.add_channel("foo", env)
 
-    Conda.rm_channel("foo")
-    channels = Conda.channels()
+    Conda.rm_channel("foo", env)
+    channels = Conda.channels(env)
     @test channels == ["defaults"]
-
-    teardown()
 end
 
 main()
