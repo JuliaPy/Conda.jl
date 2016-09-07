@@ -29,18 +29,8 @@ function BinDeps.package_available{T}(manager::ManagerType{T})
     return true
 end
 
-if is_unix()
-    BinDeps.libdir{T}(m::ManagerType{T}, ::Any) = joinpath(prefix(Environment(m)), "lib")
-end
-if is_windows()
-    function BinDeps.libdir{T}(m::ManagerType{T}, ::Any)
-        package = m.packages[1]
-        env = Environment(m)
-        joinpath(prefix(env), "Library", "bin")]
-    end
-end
-
-BinDeps.bindir{T}(m::ManagerType{T}, ::Any) = Conda.bin_dir(Environment(m))
+BinDeps.libdir{T}(m::ManagerType{T}, ::Any) = lib_dir(Environment(m))
+BinDeps.bindir{T}(m::ManagerType{T}, ::Any) = bin_dir(Environment(m))
 
 BinDeps.provider{T, S<:String}(::Type{ManagerType{T}}, packages::Vector{S}; opts...) = ManagerType{T}(packages)
 BinDeps.provider{T}(::Type{ManagerType{T}}, packages::String; opts...) = ManagerType{T}([packages])

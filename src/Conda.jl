@@ -71,6 +71,12 @@ function bin_dir(env::Environment)
 end
 const BINDIR = bin_dir(RootEnv)
 
+"Prefix for the shared libraries installed with the packages"
+function bin_dir(env::Environment)
+    return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
+end
+const LIBDIR = lib_dir(RootEnv)
+
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
 function scriptdir(env::Environment)
     return is_windows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
