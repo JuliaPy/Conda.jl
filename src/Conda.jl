@@ -107,7 +107,7 @@ function _set_conda_env(cmd, env::Environment=RootEnv)
         pop!(env_hash, var)
     end
     join_char = is_windows() ? ";" : ":"
-    env_hash["CONDARC"] = CONDARC
+    env_hash["CONDARC"] = joinpath(prefix(env), "condarc-julia")
     env_hash["PATH"] = scriptdir(env) * join_char * env_hash["PATH"]
     env_hash["CONDA_PREFIX"] = prefix(env)
     env_hash["CONDA_DEFAULT_ENV"] = prefix(env)
