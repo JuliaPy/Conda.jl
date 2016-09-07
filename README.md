@@ -1,7 +1,8 @@
 # Conda.jl
 
-[![Build Status -- OS X and Linux](https://travis-ci.org/Luthaf/Conda.jl.svg)](https://travis-ci.org/Luthaf/Conda.jl)
-[![Build status -- Windows](https://ci.appveyor.com/api/projects/status/wpm9cmlxttnfxcks/branch/master?svg=true)](https://ci.appveyor.com/project/Luthaf/conda-jl/branch/master)
+[![Build Status -- OS X and Linux](https://travis-ci.org/JuliaPy/Conda.jl.svg)](https://travis-ci.org/JuliaPy/Conda.jl)
+[![Build status -- Windows](https://ci.appveyor.com/api/projects/status/edlxohso05re3v40?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/conda-jl)
+
 
 This package allows one to use [conda](http://conda.pydata.org/) as a binary
 provider for Julia. While other binary providers like
