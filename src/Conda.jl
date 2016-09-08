@@ -43,7 +43,7 @@ end
 
 type Environment
     path::ASCIIString
-    function Environment(path::ASCIIString)
+    function Environment(path::String)
         if (!isdir(path))
             return error("Path to conda environment is not valid.")
         end
@@ -89,7 +89,14 @@ function python_dir(env::Environment)
 end
 const PYTHONDIR = python_dir(RootEnv)
 
-conda_bin(env::Environment) = joinpath(script_dir(env), "conda")
+function conda_bin(env::Environment)
+    if is_windows()
+        p = script_dir(env)
+        return isfile(joinpath(p, "conda.bat")) ? joinpath(p, "conda.bat") : joinpath(p, "conda.exe")
+    else
+        return joinpath(script_dir(env), "conda")
+    end
+end
 const conda = conda_bin(RootEnv)
 
 "Path to the condarc file"
@@ -152,7 +159,7 @@ function _install_conda(force::Bool=false, env::Environment=RootEnv)
           end
     end
 
-    if force || !(is_windows() ? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
+    if force || !isfile(Conda.conda)
         info("Downloading miniconda installer ...")
         if is_unix()
             installer = joinpath(PREFIX, "installer.sh")
@@ -180,6 +187,8 @@ function _install_conda(force::Bool=false, env::Environment=RootEnv)
             end
         end
         Conda.add_channel("defaults")
+        # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
+        run(_set_conda_env(`$(Conda.conda) update -y conda`))
     end
     if !isdir(prefix(env))
         # conda doesn't allow totally empty environments. using zlib as the default package

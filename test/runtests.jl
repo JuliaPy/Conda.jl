@@ -12,8 +12,7 @@ function main()
         curl_path = joinpath(Conda.prefix(env), "bin", "curl-config")
     end
     if is_windows()
-        manager = Conda.libdir(env)
-        curl_path = joinpath(curl_libpath, "curl.exe")
+        curl_path = joinpath(Conda.lib_dir(env), "curl.exe")
     end
 
     @test isfile(curl_path)
@@ -25,7 +24,7 @@ function main()
         @test !isfile(curl_path)
     end
 
-    @test isfile(joinpath(Conda.script_dir(env), "conda" * (is_windows() ? ".exe": "")))
+    @test isfile(Conda.conda_bin(env))
     Conda.add("python", env)
     @test isfile(joinpath(Conda.python_dir(env), "python" * (is_windows() ? ".exe": "")))
 
