@@ -5,10 +5,6 @@ type ManagerType{T} <: BinDeps.PackageManager
     packages::Vector{Compat.ASCIIString}
 end
 
-function Environment{T}(manager::ManagerType{T})
-    Environment(T)
-end
-
 "Manager for root environment"
 Manager = ManagerType{Symbol(prefix(RootEnv))}
 
@@ -22,15 +18,15 @@ function BinDeps.package_available{T}(manager::ManagerType{T})
     pkgs = manager.packages
     # For each package, see if we can get info about it. If not, fail out
     for pkg in pkgs
-        if !exists(pkg, Environment(manager))
+        if !exists(pkg, manager)
             return false
         end
     end
     return true
 end
 
-BinDeps.libdir{T}(m::ManagerType{T}, ::Any) = lib_dir(Environment(m))
-BinDeps.bindir{T}(m::ManagerType{T}, ::Any) = bin_dir(Environment(m))
+BinDeps.libdir{T}(m::ManagerType{T}, ::Any) = lib_dir(m)
+BinDeps.bindir{T}(m::ManagerType{T}, ::Any) = bin_dir(m)
 
 BinDeps.provider{T, S<:String}(::Type{ManagerType{T}}, packages::Vector{S}; opts...) = ManagerType{T}(packages)
 BinDeps.provider{T}(::Type{ManagerType{T}}, packages::String; opts...) = ManagerType{T}([packages])
@@ -45,6 +41,6 @@ end
 
 function install(pkgs, manager::ManagerType)
     for pkg in pkgs
-        add(pkg, Environment(manager))
+        add(pkg, manager)
     end
 end

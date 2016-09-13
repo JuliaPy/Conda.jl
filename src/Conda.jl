@@ -34,35 +34,39 @@ module Conda
 using Compat
 import Compat.String
 using JSON
-include("../deps/deps.jl")
+
+deps_file = joinpath(dirname(@__FILE__), "..", "deps","deps.jl")
+
+if isfile(deps_file)
+    include(deps_file)
+else
+    error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
+end
+
+typealias Environment Union{AbstractString,Symbol}
+
+RootEnv = default_dir
+
+"Prefix for installation of the environment"
+function prefix(name::Symbol)
+    if (length(string(name)) == 0)
+        return error("Environment name should be non empty.")
+    end
+    return joinpath(default_dir, "envs", string(name))
+end
+
+function prefix(path::Compat.ASCIIString)
+    if (!isdir(path))
+        return error("Path to conda environment is not valid.")
+    end
+    return path
+end
 
 if !isdir(default_dir)
-    # Ensure default_dir exists
+    # Ensure default_dir exists, otherwise defining constants below will throw errors
     mkpath(default_dir)
 end
 
-type Environment
-    path::ASCIIString
-    function Environment(path::String)
-        if (!isdir(path))
-            return error("Path to conda environment is not valid.")
-        end
-        return new(path)
-    end
-    function Environment(name::Symbol)
-        if (length(string(name)) == 0)
-            return error("Environment name should be non empty.")
-        end
-        return new(joinpath(default_dir, "envs", string(name)))
-    end
-end
-
-RootEnv = Environment(default_dir)
-
-"Prefix for installation of the environment"
-function prefix(env::Environment)
-    return env.path
-end
 const PREFIX = prefix(RootEnv)
 
 "Prefix for the executable files installed with the packages"
