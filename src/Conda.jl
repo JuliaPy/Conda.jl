@@ -55,16 +55,11 @@ function prefix(name::Symbol)
     return joinpath(ROOTENV, "envs", sname)
 end
 
-function prefix(path::Compat.ASCIIString)
+function prefix(path::AbstractString)
     if !isdir(path)
         throw(ArgumentError("Path to conda environment is not valid."))
     end
     return path
-end
-
-if !isdir(ROOTENV)
-    # Ensure ROOTENV exists, otherwise defining constants below will throw errors
-    mkpath(ROOTENV)
 end
 
 const PREFIX = prefix(ROOTENV)
@@ -115,7 +110,7 @@ Any environment variable starting by CONDA will interact with the run.
 """
 function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var = copy(ENV)
-    to_remove = AbstractString[]
+    to_remove = Compat.UTF8String[]
     for var in keys(env_var)
         if startswith(var, "CONDA")
             push!(to_remove, var)
@@ -135,10 +130,10 @@ function runconda(args::Cmd, env::Environment=ROOTENV)
     run(_set_conda_env(`$(conda_bin(env)) $args`, env))
 end
 
-"Run conda command with environment variables set and return the output as a string"
-function readconda(args::Cmd, env::Environment=ROOTENV)
+"Run conda command with environment variables set and return the json output as a julia object"
+function parseconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
-    readstring(_set_conda_env(`$(conda_bin(env)) $args`, env))
+    JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) $args --json`, env)))
 end
 
 "Get the miniconda installer URL."
@@ -256,7 +251,7 @@ end
 
 "Get the exact version of a package."
 function version(name::AbstractString, env::Environment=ROOTENV)
-    packages = JSON.parse(readconda(`list --json`, env))
+    packages = parseconda(`list`, env)
     for package in packages
         if startswith(package, name) || ismatch(Regex("::$name"), package)
             return package
@@ -267,13 +262,13 @@ end
 
 "Search packages for a string"
 function search(package::AbstractString, env::Environment=ROOTENV)
-    return collect(keys(JSON.parse(readconda(`search $package --json`, env))))
+    return collect(keys(parseconda(`search $package`, env)))
 end
 
 "Search a specific version of a package"
 function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
-    ret=JSON.parse(readconda(`search $package --json`, env))
-    out = Compat.ASCIIString[]
+    ret=parseconda(`search $package`, env)
+    out = Compat.UTF8String[]
     for k in keys(ret)
       for i in 1:length(ret[k])
         ret[k][i]["version"]==ver && push!(out,k)
@@ -299,21 +294,21 @@ end
 
 "Get the list of channels used to search packages"
 function channels(env::Environment=ROOTENV)
-    ret=JSON.parse(readconda(`config --get channels --json`, env))
+    ret=parseconda(`config --get channels`, env)
     if haskey(ret["get"], "channels")
-        return collect(Compat.ASCIIString, ret["get"]["channels"])
+        return collect(Compat.UTF8String, ret["get"]["channels"])
     else
-        return Compat.ASCIIString[]
+        return Compat.UTF8String[]
     end
 end
 
 "Add a channel to the list of channels"
-function add_channel(channel::Compat.String, env::Environment=ROOTENV)
+function add_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --add channels $channel --force`, env)
 end
 
 "Remove a channel from the list of channels"
-function rm_channel(channel::Compat.String, env::Environment=ROOTENV)
+function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --remove channels $channel --force`, env)
 end
 
