@@ -130,13 +130,13 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
 end
 
 "Run conda command with environment variables set."
-function runconda(args::Cmd, env::Environment=RootEnv)
+function runconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
     run(_set_conda_env(`$(conda_bin(env)) $args`, env))
 end
 
 "Run conda command with environment variables set and return the output as a string"
-function readconda(args::Cmd, env::Environment=RootEnv)
+function readconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
     readstring(_set_conda_env(`$(conda_bin(env)) $args`, env))
 end
