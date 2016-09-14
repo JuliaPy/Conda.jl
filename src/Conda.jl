@@ -221,9 +221,7 @@ end
 
 "Update all installed packages."
 function update(env::Environment=ROOTENV)
-    for package in _installed_packages()
-        runconda(`update -y $package`, env)
-    end
+    runconda(`update -y --all`, env)
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
