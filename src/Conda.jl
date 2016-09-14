@@ -130,10 +130,16 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
 end
 
 "Run conda command with environment variables set."
-runconda(args::Cmd, env::Environment=RootEnv) = run(_set_conda_env(`$(conda_bin(env)) $args`, env))
+function runconda(args::Cmd, env::Environment=RootEnv)
+    _install_conda(env)
+    run(_set_conda_env(`$(conda_bin(env)) $args`, env))
+end
 
 "Run conda command with environment variables set and return the output as a string"
-readconda(args::Cmd, env::Environment=RootEnv) = readstring(_set_conda_env(`$(conda_bin(env)) $args`, env))
+function readconda(args::Cmd, env::Environment=RootEnv)
+    _install_conda(env)
+    readstring(_set_conda_env(`$(conda_bin(env)) $args`, env))
+end
 
 "Get the miniconda installer URL."
 function _installer_url()
@@ -205,19 +211,16 @@ end
 
 "Install a new package."
 function add(pkg::AbstractString, env::Environment=ROOTENV)
-    _install_conda(env)
     runconda(`install -y $pkg`, env)
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString, env::Environment=ROOTENV)
-    _install_conda(env)
     runconda(`remove -y $pkg`, env)
 end
 
 "Update all installed packages."
 function update(env::Environment=ROOTENV)
-    _install_conda(env)
     for package in _installed_packages()
         runconda(`update -y $package`, env)
     end
@@ -250,13 +253,11 @@ _installed_packages(env::Environment=ROOTENV) = keys(_installed_packages_dict(en
 
 "List all installed packages to standard output."
 function list(env::Environment=ROOTENV)
-    _install_conda(env)
     runconda(`list`, env)
 end
 
 "Get the exact version of a package."
 function version(name::AbstractString, env::Environment=ROOTENV)
-    _install_conda(env)
     packages = JSON.parse(readconda(`list --json`, env))
     for package in packages
         if startswith(package, name) || ismatch(Regex("::$name"), package)
@@ -268,13 +269,11 @@ end
 
 "Search packages for a string"
 function search(package::AbstractString, env::Environment=ROOTENV)
-    _install_conda(env)
     return collect(keys(JSON.parse(readconda(`search $package --json`, env))))
 end
 
 "Search a specific version of a package"
 function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
-    _install_conda(env)
     ret=JSON.parse(readconda(`search $package --json`, env))
     out = Compat.ASCIIString[]
     for k in keys(ret)
@@ -302,7 +301,6 @@ end
 
 "Get the list of channels used to search packages"
 function channels(env::Environment=ROOTENV)
-    _install_conda(env)
     ret=JSON.parse(readconda(`config --get channels --json`, env))
     if haskey(ret["get"], "channels")
         return collect(Compat.ASCIIString, ret["get"]["channels"])
@@ -313,14 +311,12 @@ end
 
 "Add a channel to the list of channels"
 function add_channel(channel::Compat.String, env::Environment=ROOTENV)
-    _install_conda(env)
     runconda(`config --add channels $channel --force`, env)
 end
 
 "Remove a channel from the list of channels"
 function rm_channel(channel::Compat.String, env::Environment=ROOTENV)
-    _install_conda(env)
-    runconda(`config --remove channels $channel --force`, env))
+    runconda(`config --remove channels $channel --force`, env)
 end
 
 include("bindeps_conda.jl")
