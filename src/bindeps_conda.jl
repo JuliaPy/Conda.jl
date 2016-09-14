@@ -6,7 +6,7 @@ type ManagerType{T} <: BinDeps.PackageManager
 end
 
 "Manager for root environment"
-Manager = ManagerType{Symbol(prefix(rootenv))}
+Manager = ManagerType{Symbol(PREFIX)}
 
 function Base.show{T}(io::IO, manager::ManagerType{T})
     write(io, "Conda packages: ", join(manager.packages, ", "))
