@@ -35,42 +35,106 @@ using Compat
 import Compat.String
 using JSON
 
-"Prefix for installation of all the packages."
-const PREFIX = abspath(dirname(@__FILE__), "..", "deps", "usr")
+const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
+
+if isfile(deps_file)
+    # Includes definition for ROOTENV
+    include(deps_file)
+else
+    error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
+end
+
+typealias Environment Union{AbstractString,Symbol}
+
+"Prefix for installation of the environment"
+function prefix(name::Symbol)
+    sname = string(name)
+    if isempty(sname)
+        throw(ArgumentError("Environment name should be non empty."))
+    end
+    return joinpath(ROOTENV, "envs", sname)
+end
+
+function prefix(path::AbstractString)
+    if !isdir(path)
+        throw(ArgumentError("Path to conda environment is not valid."))
+    end
+    return path
+end
+
+const PREFIX = prefix(ROOTENV)
 
 "Prefix for the executable files installed with the packages"
-const BINDIR = is_windows() ? joinpath(PREFIX, "Library", "bin") : joinpath(PREFIX, "bin")
+function bin_dir(env::Environment)
+    return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
+end
+const BINDIR = bin_dir(ROOTENV)
+
+"Prefix for the shared libraries installed with the packages"
+function lib_dir(env::Environment)
+    return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
+end
+const LIBDIR = lib_dir(ROOTENV)
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
-const SCRIPTDIR = is_windows() ? joinpath(PREFIX, "Scripts") : BINDIR
+function script_dir(env::Environment)
+    return is_windows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
+end
+const SCRIPTDIR = script_dir(ROOTENV)
 
 "Prefix where the `python` command lives"
-const PYTHONDIR = is_windows() ? PREFIX : BINDIR
+function python_dir(env::Environment)
+    return is_windows() ? prefix(env) : bin_dir(env)
+end
+const PYTHONDIR = python_dir(ROOTENV)
 
-"Path to the `conda` binary"
-const conda = joinpath(SCRIPTDIR, "conda")
+function conda_bin(env::Environment)
+    if is_windows()
+        p = script_dir(env)
+        conda_bat = joinpath(p, "conda.bat")
+        return isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
+    else
+        return joinpath(script_dir(env), "conda")
+    end
+end
+const conda = conda_bin(ROOTENV)
 
 "Path to the condarc file"
-const CONDARC = joinpath(PREFIX, "condarc-julia.yml")
+conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
+const CONDARC = conda_rc(ROOTENV)
+
 
 """
 Use a cleaned up environment for the command `cmd`.
 
 Any environment variable starting by CONDA will interact with the run.
 """
-function _set_conda_env(cmd)
-    env = copy(ENV)
-    to_remove = AbstractString[]
-    for var in keys(env)
+function _set_conda_env(cmd, env::Environment=ROOTENV)
+    env_var = copy(ENV)
+    to_remove = Compat.UTF8String[]
+    for var in keys(env_var)
         if startswith(var, "CONDA")
             push!(to_remove, var)
         end
     end
     for var in to_remove
-        pop!(env, var)
+        pop!(env_var, var)
     end
-    env["CONDARC"] = CONDARC
-    setenv(cmd, env)
+    env_var["CONDARC"] = conda_rc(env)
+    env_var["CONDA_PREFIX"] = env_var["CONDA_DEFAULT_ENV"] = prefix(env)
+    setenv(cmd, env_var)
+end
+
+"Run conda command with environment variables set."
+function runconda(args::Cmd, env::Environment=ROOTENV)
+    _install_conda(env)
+    run(_set_conda_env(`$(conda_bin(env)) $args`, env))
+end
+
+"Run conda command with environment variables set and return the json output as a julia object"
+function parseconda(args::Cmd, env::Environment=ROOTENV)
+    _install_conda(env)
+    JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) $args --json`, env)))
 end
 
 "Get the miniconda installer URL."
@@ -93,23 +157,18 @@ end
 is_windows() && include("outlook.jl")
 
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
-function _install_conda(force=false)
-    if is_windows()
-          if is_outlook_running()
-              error("""\n
-              Outlook is running, and running the Miniconda installer will crash it.
-              Please quit Outlook and then restart the installation.
+function _install_conda(env::Environment, force::Bool=false)
+    if force || !isfile(Conda.conda)
+        if is_windows() && is_outlook_running()
+            error("""\n
+            Outlook is running, and running the Miniconda installer will crash it.
+            Please quit Outlook and then restart the installation.
 
-              For more information, see:
-                    https://github.com/Luthaf/Conda.jl/issues/15
-                    https://github.com/conda/conda/issues/1084
-              """)
-          end
-    end
-
-    if force || !(is_windows() ? isfile(Conda.conda * ".exe") : isfile(Conda.conda))
-        # Ensure PREFIX exists
-        mkpath(PREFIX)
+            For more information, see:
+                https://github.com/Luthaf/Conda.jl/issues/15
+                https://github.com/conda/conda/issues/1084
+            """)
+        end
         info("Downloading miniconda installer ...")
         if is_unix()
             installer = joinpath(PREFIX, "installer.sh")
@@ -137,34 +196,35 @@ function _install_conda(force=false)
             end
         end
         Conda.add_channel("defaults")
+        # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
+        runconda(`update -y conda`)
+    end
+    if !isdir(prefix(env))
+        # conda doesn't allow totally empty environments. using zlib as the default package
+        runconda(`create -y -p $(prefix(env)) zlib`)
     end
 end
 
 "Install a new package."
-function add(pkg::AbstractString)
-    _install_conda()
-    run(_set_conda_env(`$conda install -y $pkg`))
+function add(pkg::AbstractString, env::Environment=ROOTENV)
+    runconda(`install -y $pkg`, env)
 end
 
 "Uninstall a package."
-function rm(pkg::AbstractString)
-    _install_conda()
-    run(_set_conda_env(`$conda remove -y $pkg`))
+function rm(pkg::AbstractString, env::Environment=ROOTENV)
+    runconda(`remove -y $pkg`, env)
 end
 
 "Update all installed packages."
-function update()
-    _install_conda()
-    for package in _installed_packages()
-        run(_set_conda_env(`$conda update -y $package`))
-    end
+function update(env::Environment=ROOTENV)
+    runconda(`update -y --all`, env)
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
-function  _installed_packages_dict()
-    _install_conda()
+function  _installed_packages_dict(env::Environment=ROOTENV)
+    _install_conda(env)
     package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
-    for line in eachline(`$(Conda.conda) list`)
+    for line in eachline(_set_conda_env(`$(conda_bin(env)) list`, env))
         line = chomp(line)
         if !startswith(line, "#")
             name, version, build_string = split(line)
@@ -183,18 +243,16 @@ function  _installed_packages_dict()
 end
 
 "List all installed packages as an array."
-_installed_packages() = keys(_installed_packages_dict())
+_installed_packages(env::Environment=ROOTENV) = keys(_installed_packages_dict(env))
 
 "List all installed packages to standard output."
-function list()
-    _install_conda()
-    run(_set_conda_env(`$conda list`))
+function list(env::Environment=ROOTENV)
+    runconda(`list`, env)
 end
 
 "Get the exact version of a package."
-function version(name::AbstractString)
-    _install_conda()
-    packages = JSON.parse(readstring(`$conda list --json`))
+function version(name::AbstractString, env::Environment=ROOTENV)
+    packages = parseconda(`list`, env)
     for package in packages
         if startswith(package, name) || ismatch(Regex("::$name"), package)
             return package
@@ -204,16 +262,14 @@ function version(name::AbstractString)
 end
 
 "Search packages for a string"
-function search(package::AbstractString)
-    _install_conda()
-    return collect(keys(JSON.parse(readstring(_set_conda_env(`$conda search $package --json`)))))
+function search(package::AbstractString, env::Environment=ROOTENV)
+    return collect(keys(parseconda(`search $package`, env)))
 end
 
 "Search a specific version of a package"
-function search(package::AbstractString, ver::AbstractString)
-    _install_conda()
-    ret=JSON.parse(readstring(_set_conda_env(`$conda search $package --json`)))
-    out = Compat.ASCIIString[]
+function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
+    ret=parseconda(`search $package`, env)
+    out = Compat.UTF8String[]
     for k in keys(ret)
       for i in 1:length(ret[k])
         ret[k][i]["version"]==ver && push!(out,k)
@@ -223,12 +279,12 @@ function search(package::AbstractString, ver::AbstractString)
 end
 
 "Check if a given package exists."
-function exists(package::AbstractString)
+function exists(package::AbstractString, env::Environment=ROOTENV)
     if contains(package,"==")
       pkg,ver=split(package,"==")  # Remove version if provided
-      return pkg in search(pkg,ver)
+      return pkg in search(pkg,ver,env)
     else
-      if package in search(package)
+      if package in search(package,env)
         # Found exactly this package
         return true
       else
@@ -238,26 +294,23 @@ function exists(package::AbstractString)
 end
 
 "Get the list of channels used to search packages"
-function channels()
-    _install_conda()
-    ret=JSON.parse(readstring(_set_conda_env(`$conda config --get channels --json`)))
+function channels(env::Environment=ROOTENV)
+    ret=parseconda(`config --get channels`, env)
     if haskey(ret["get"], "channels")
-        return collect(Compat.ASCIIString, ret["get"]["channels"])
+        return collect(Compat.UTF8String, ret["get"]["channels"])
     else
-        return Compat.ASCIIString[]
+        return Compat.UTF8String[]
     end
 end
 
 "Add a channel to the list of channels"
-function add_channel(channel::Compat.String)
-    _install_conda()
-    run(_set_conda_env(`$conda config --add channels $channel --force`))
+function add_channel(channel::AbstractString, env::Environment=ROOTENV)
+    runconda(`config --add channels $channel --force`, env)
 end
 
 "Remove a channel from the list of channels"
-function rm_channel(channel::Compat.String)
-    _install_conda()
-    run(_set_conda_env(`$conda config --remove channels $channel --force`))
+function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
+    runconda(`config --remove channels $channel --force`, env)
 end
 
 include("bindeps_conda.jl")

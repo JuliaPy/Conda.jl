@@ -1,57 +1,46 @@
 # This file contains the necessary ingredients to create a PackageManager for BinDeps
 using BinDeps
 
-type Manager <: BinDeps.PackageManager
-    packages::Vector{Compat.ASCIIString}
+type EnvManager{T} <: BinDeps.PackageManager
+    packages::Vector{Compat.UTF8String}
 end
 
-function Base.show(io::IO, manager::Manager)
+"Manager for root environment"
+typealias Manager EnvManager{Symbol(PREFIX)}
+
+function Base.show{T}(io::IO, manager::EnvManager{T})
     write(io, "Conda packages: ", join(manager.packages, ", "))
 end
 
-BinDeps.can_use(::Type{Manager}) = true
+BinDeps.can_use(::Type{EnvManager}) = true
 
-function BinDeps.package_available(manager::Manager)
+function BinDeps.package_available{T}(manager::EnvManager{T})
     pkgs = manager.packages
     # For each package, see if we can get info about it. If not, fail out
     for pkg in pkgs
-        if !exists(pkg)
+        if !exists(pkg, T)
             return false
         end
     end
     return true
 end
 
-if is_unix()
-    BinDeps.libdir(::Manager, ::Any) = joinpath(PREFIX, "lib")
-end
-if is_windows()
-    function BinDeps.libdir(m::Manager, ::Any)
-        package = m.packages[1]
-        if package in _installed_packages()
-            joinpath(PREFIX, "pkgs", version(package), "Library", "bin")
-        else
-            # Return a default path, as we can not call version() on package.
-            joinpath(PREFIX, "lib")
-        end
-    end
-end
+BinDeps.libdir{T}(m::EnvManager{T}, ::Any) = lib_dir(T)
+BinDeps.bindir{T}(m::EnvManager{T}, ::Any) = bin_dir(T)
 
-BinDeps.bindir(m::Manager, ::Any) = BINDIR
+BinDeps.provider{T, S<:String}(::Type{EnvManager{T}}, packages::Vector{S}; opts...) = EnvManager{T}(packages)
+BinDeps.provider{T}(::Type{EnvManager{T}}, packages::String; opts...) = EnvManager{T}([packages])
 
-BinDeps.provider{T<:String}(::Type{Manager}, packages::Vector{T}; opts...) = Manager(packages)
-BinDeps.provider(::Type{Manager}, packages::String; opts...) = Manager([packages])
-
-function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::Manager, opts)
+function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::EnvManager, opts)
     pkgs = manager.packages
     if isa(pkgs, AbstractString)
         pkgs = [pkgs]
     end
-    ()->install(pkgs)
+    ()->install(pkgs, manager)
 end
 
-function install(pkgs)
+function install{T}(pkgs, manager::EnvManager{T})
     for pkg in pkgs
-        add(pkg)
+        add(pkg, T)
     end
 end
