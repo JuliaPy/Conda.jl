@@ -100,7 +100,8 @@ end
 const conda = conda_bin(ROOTENV)
 
 "Path to the condarc file"
-const CONDARC = joinpath(PREFIX, "condarc-julia.yml")
+conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
+const CONDARC = conda_rc(ROOTENV)
 
 
 """
@@ -119,7 +120,7 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     for var in to_remove
         pop!(env_var, var)
     end
-    env_var["CONDARC"] = joinpath(prefix(env), "condarc-julia.yml")
+    env_var["CONDARC"] = conda_rc(env)
     env_var["CONDA_PREFIX"] = env_var["CONDA_DEFAULT_ENV"] = prefix(env)
     setenv(cmd, env_var)
 end
