@@ -164,10 +164,10 @@ end
 function  _installed_packages_dict()
     _install_conda()
     package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
-    for line in eachline(`$(Conda.conda) list --export`)
+    for line in eachline(`$(Conda.conda) list`)
         line = chomp(line)
         if !startswith(line, "#")
-            name, version, build_string = split(line, "=")
+            name, version, build_string = split(line)
             # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
             # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
             version_number = join(split(version,".")[1:min(3,end)],".")
