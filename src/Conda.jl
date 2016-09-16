@@ -100,7 +100,7 @@ end
 const conda = conda_bin(ROOTENV)
 
 "Path to the condarc file"
-const CONDARC = joinpath(PREFIX, "condarc-julia")
+const CONDARC = joinpath(PREFIX, "condarc-julia.yml")
 
 
 """
@@ -119,7 +119,7 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     for var in to_remove
         pop!(env_var, var)
     end
-    env_var["CONDARC"] = joinpath(prefix(env), "condarc-julia")
+    env_var["CONDARC"] = joinpath(prefix(env), "condarc-julia.yml")
     env_var["CONDA_PREFIX"] = env_var["CONDA_DEFAULT_ENV"] = prefix(env)
     setenv(cmd, env_var)
 end
@@ -223,10 +223,10 @@ end
 function  _installed_packages_dict(env::Environment=ROOTENV)
     _install_conda(env)
     package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
-    for line in eachline(_set_conda_env(`$(conda_bin(env)) list --export`, env))
+    for line in eachline(_set_conda_env(`$(conda_bin(env)) list`, env))
         line = chomp(line)
         if !startswith(line, "#")
-            name, version, build_string = split(line, "=")
+            name, version, build_string = split(line)
             # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
             # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
             version_number = join(split(version,".")[1:min(3,end)],".")
