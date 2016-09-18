@@ -51,7 +51,7 @@ const PYTHONDIR = is_windows() ? PREFIX : BINDIR
 const conda = joinpath(SCRIPTDIR, "conda")
 
 "Path to the condarc file"
-const CONDARC = joinpath(PREFIX, "condarc-julia")
+const CONDARC = joinpath(PREFIX, "condarc-julia.yml")
 
 """
 Use a cleaned up environment for the command `cmd`.
