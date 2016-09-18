@@ -103,7 +103,7 @@ You have to build `Conda.jl` and all the packages using `Conda.jl` after this.
 ```shell
 conda create -n conda_jl python
 export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
-julia -e "Pkg.build('Conda')"
+julia -e 'Pkg.build("Conda")'
 ```
 
 
