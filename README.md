@@ -30,13 +30,41 @@ You can install this package by running `Pkg.add("Conda")` at the Julia prompt.
 
 Basic package managing utilities are provided in the Conda module:
 
-- `Conda.add(package)`: install a package;
-- `Conda.rm(package)`: remove (uninstall) a package;
-- `Conda.update()`: update all installed packages to the latest version;
-- `Conda.list()`: list all installed packages.
-- `Conda.add_channel(channel)`: add a channel to the list of channels;
-- `Conda.channels()`: get the current list of channels;
-- `Conda.rm_channel(channel)`: remove a channel from the list of channels;
+- `Conda.add(package, env)`: install a package;
+- `Conda.rm(package, env)`: remove (uninstall) a package;
+- `Conda.update(env)`: update all installed packages to the latest version;
+- `Conda.list(env)`: list all installed packages.
+- `Conda.add_channel(channel, env)`: add a channel to the list of channels;
+- `Conda.channels(env)`: get the current list of channels;
+- `Conda.rm_channel(channel, env)`: remove a channel from the list of channels;
+
+Parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
+
+### Conda Environments
+
+[Conda environments](http://conda.pydata.org/docs/using/envs.html) allow you to
+manage multiple distinct sets of packages in a way that avoids conflicts and
+allows you to install different versions of packages simultaneously.
+
+The `Conda.jl` package supports environments by allowing you to pass an optional
+`env` parameter to functions for package installation, update, and so on. If
+this parameter is not specified, then the default "root" environment
+(corresponding to the path in `Conda.ROOTENV`) is used. The environment name can
+be specified as a `Symbol`, or the full path of the environment
+(if you want to use an environment in a nonstandard directory) can
+be passed as a string.
+
+For example:
+
+```julia
+using Conda
+Conda.add("libnetcdf", :my_env)
+Conda.add("libnetcdf", "/path/to/directory")
+```
+
+(NOTE: If you are installing Python packages for use with
+[PyCall](https://github.com/JuliaPy/PyCall.jl), you must use the root
+environment.)
 
 ## BinDeps integration: using Conda.jl as a package author
 
@@ -73,6 +101,26 @@ BinDeps:
 ```julia
 provides(Conda.Manager, "libnetcdf", netcdf, os=:Linux)
 ```
+
+To tell BinDeps to install the package to an environment different from the
+root environment, use `EnvManager`.
+
+```julia
+provides(Conda.EnvManager{:my_env}, "libnetcdf", netcdf)
+```
+
+## Using an already existing Conda installation
+To use an already existing Conda installation, first create an environment for
+`Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
+path of the environment. You have to rebuild `Conda.jl` and all the packages
+using `Conda.jl` after this.
+
+```shell
+conda create -n conda_jl python
+export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
+julia -e 'Pkg.build("Conda")'
+```
+
 
 ## Bugs and suggestions
 
