@@ -42,16 +42,29 @@ Parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
 ### Conda Environments
 
-You can use Conda environments via `Conda.jl`. Note that python packages should
-be installed to the root environment or the python environment used in
-`PyCall.jl`. To use environments use the `env` parameter. Environment name can
-be specified as a `Symbol` or the full path as a `String`.
+[Conda environments](http://conda.pydata.org/docs/using/envs.html) allow you to
+manage multiple distinct sets of packages in a way that avoids conflicts and
+allows you to install different versions of packages simultaneously.
+
+The `Conda.jl` package supports environments by allowing you to pass an optional
+`env` parameter to functions for package installation, update, and so on. If
+this parameter is not specified, then the default "root" environment
+(corresponding to the path in `Conda.ROOTENV`) is used. The environment name can
+be specified as a `Symbol`, or the full path of the environment
+(if you want to use an environment in a nonstandard directory) can
+be passed as a string.
+
+For example:
 
 ```julia
 using Conda
 Conda.add("libnetcdf", :my_env)
 Conda.add("libnetcdf", "/path/to/directory")
 ```
+
+(NOTE: If you are installing Python packages for use with
+[PyCall](https://github.com/JuliaPy/PyCall.jl), you must use the root
+environment.)
 
 ## BinDeps integration: using Conda.jl as a package author
 
@@ -89,7 +102,8 @@ BinDeps:
 provides(Conda.Manager, "libnetcdf", netcdf, os=:Linux)
 ```
 
-To tell BinDeps to install the package to an environments, use `EnvManager`.
+To tell BinDeps to install the package to an environment different from the
+root environment, use `EnvManager`.
 
 ```julia
 provides(Conda.EnvManager{:my_env}, "libnetcdf", netcdf)
@@ -97,8 +111,9 @@ provides(Conda.EnvManager{:my_env}, "libnetcdf", netcdf)
 
 ## Using an already existing Conda installation
 To use an already existing Conda installation, first create an environment for
-`Conda.jl` and then set `CONDA_JL_HOME` to the full path of the environment.
-You have to build `Conda.jl` and all the packages using `Conda.jl` after this.
+`Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
+path of the environment. You have to rebuild `Conda.jl` and all the packages
+using `Conda.jl` after this.
 
 ```shell
 conda create -n conda_jl python
