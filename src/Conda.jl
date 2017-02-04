@@ -139,7 +139,7 @@ end
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda-latest-"
+    res = "https://repo.continuum.io/miniconda/Miniconda2-latest-"
     if is_apple()
         res *= "MacOSX"
     elseif is_linux()
