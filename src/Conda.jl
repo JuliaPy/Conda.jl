@@ -44,7 +44,7 @@ else
     error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
 end
 
-typealias Environment Union{AbstractString,Symbol}
+const Environment = Union{AbstractString,Symbol}
 
 "Prefix for installation of the environment"
 function prefix(name::Symbol)
