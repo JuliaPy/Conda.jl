@@ -107,13 +107,13 @@ const CONDARC = conda_rc(ROOTENV)
 """
 Use a cleaned up environment for the command `cmd`.
 
-Any environment variable starting by CONDA will interact with the run.
+Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
 function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var = copy(ENV)
     to_remove = Compat.UTF8String[]
     for var in keys(env_var)
-        if startswith(var, "CONDA")
+        if startswith(var, "CONDA") || startswith(var, "PYTHON")
             push!(to_remove, var)
         end
     end
