@@ -6,7 +6,7 @@
 
 This package allows one to use [conda](http://conda.pydata.org/) as a binary
 provider for Julia. While other binary providers like
-[Hombrew.jl](https://github.com/JuliaLang/Homebrew.jl),
+[Homebrew.jl](https://github.com/JuliaLang/Homebrew.jl),
 [AptGet](https://en.wikipedia.org/wiki/Advanced_Packaging_Tool#apt-get) or
 [WinRPM.jl](https://github.com/JuliaLang/WinRPM.jl) are platform-specific,
 Conda.jl is a cross-platform alternative. It can also be used without
@@ -40,7 +40,7 @@ Basic package managing utilities are provided in the Conda module:
 
 Parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
-### Conda Environments
+### Conda environments
 
 [Conda environments](http://conda.pydata.org/docs/using/envs.html) allow you to
 manage multiple distinct sets of packages in a way that avoids conflicts and
