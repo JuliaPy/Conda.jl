@@ -280,8 +280,8 @@ end
 
 "Check if a given package exists."
 function exists(package::AbstractString, env::Environment=ROOTENV)
-    if contains(package,"==")
-      pkg,ver=split(package,"==")  # Remove version if provided
+    if contains(package,"=")
+      pkg,ver=split(package,"=")  # Remove version if provided
       return pkg in search(pkg,ver,env)
     else
       if package in search(package,env)
