@@ -6,6 +6,10 @@ julia:
     - 0.4
     - 0.5
     - nightly
+env:
+    - MINICONDA_VERSION="2"
+    - MINICONDA_VERSION="3"
+
 notifications:
     email: false
 

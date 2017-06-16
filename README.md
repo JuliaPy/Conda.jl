@@ -40,6 +40,15 @@ Basic package managing utilities are provided in the Conda module:
 
 Parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
+## Miniconda Python Version
+There are two versions of Miniconda, one for Python 2, and one for Python 3.
+This controls the initial version of python uses in the setup of Conda itself,
+and thus the default version of python for all dependancies.
+You can change the version by setting the enviroment variable `MINICONDA_VERSION` to `"3"`,
+before installing any packages.
+Except for the creation of the initial `ROOTENV`, they are identical up to upgrading the version of python, and all that depend upon it.
+See [the Conda documentation for more information](https://conda.io/docs/py2or3.htm).
+
 ### Conda environments
 
 [Conda environments](http://conda.pydata.org/docs/using/envs.html) allow you to

@@ -137,9 +137,11 @@ function parseconda(args::Cmd, env::Environment=ROOTENV)
     JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) $args --json`, env)))
 end
 
+const MINICONDA_VERSION = get(ENV, "MINICONDA_VERSION", "2")
+
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda2-latest-"
+    res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
     if is_apple()
         res *= "MacOSX"
     elseif is_linux()
