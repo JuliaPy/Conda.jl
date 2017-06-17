@@ -38,7 +38,7 @@ using JSON
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
 if isfile(deps_file)
-    # Includes definition for ROOTENV
+    # Includes definition for ROOTENV, and MINICONDA_VERSION
     include(deps_file)
 else
     error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
@@ -136,8 +136,6 @@ function parseconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
     JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) $args --json`, env)))
 end
-
-const MINICONDA_VERSION = get(ENV, "MINICONDA_VERSION", "2")
 
 "Get the miniconda installer URL."
 function _installer_url()

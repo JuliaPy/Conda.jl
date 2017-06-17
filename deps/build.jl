@@ -1,14 +1,21 @@
 using Compat
 
-if haskey(ENV, "CONDA_JL_HOME")
-    ROOTENV = ENV["CONDA_JL_HOME"]
-elseif isfile("deps.jl")
-    include("deps.jl")
-else
-    ROOTENV = abspath(dirname(@__FILE__), "usr")
+module DefaultDeps
+    if isfile("deps.jl")
+        include("deps.jl")
+    else
+        const ROOTENV = abspath(dirname(@__FILE__), "usr")
+        const MINICONDA_VERSION = "2"
+    end
 end
 
-deps = "const ROOTENV=\"$(escape_string(ROOTENV))\"\n"
+ROOTENV = get(ENV, "CONDA_JL_HOME", DefaultDeps.ROOTENV)
+MINICONDA_VERSION = get(ENV, "CONDA_JL_VERSION", DefaultDeps.MINICONDA_VERSION)
+
+deps = """# Generated from $(@__FILE__) on $(now())
+const ROOTENV="$(escape_string(ROOTENV))"
+const MINICONDA_VERSION="$(escape_string(MINICONDA_VERSION))"
+"""
 
 if !isfile("deps.jl") || readstring("deps.jl") != deps
     write("deps.jl", deps)
