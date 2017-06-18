@@ -40,15 +40,6 @@ Basic package managing utilities are provided in the Conda module:
 
 Parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
-## Miniconda Python Version
-There are two versions of Miniconda, one for Python 2, and one for Python 3.
-This controls the initial version of python uses in the setup of Conda itself,
-and thus the default version of python for all dependancies.
-You can change the version by setting the enviroment variable `CONDA_JL_VERSION` to `"3"`, prior to installing the Conda.jl package.
-If you change this after Conda.jl has been added, you will need to rerun `Pkg.build("Conda")`.
-Except for the creation of the initial `ROOTENV`, they are identical up to upgrading the version of python, and all that depend upon it.
-See [the Conda documentation for more information](https://conda.io/docs/py2or3.htm).
-
 ### Conda environments
 
 [Conda environments](http://conda.pydata.org/docs/using/envs.html) allow you to
@@ -129,6 +120,19 @@ conda create -n conda_jl python
 export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
 julia -e 'Pkg.build("Conda")'
 ```
+## Miniconda Python Version
+There are two versions of Miniconda, one for Python 2, and one for Python 3.
+This controls the initial version of python uses in the setup of Conda itself,
+and thus the default version of python for all dependancies.
+You can change the version by setting the enviroment variable `CONDA_JL_VERSION` to `"3"`, prior to installing the Conda.jl package.
+Except for the creation of the initial `ROOTENV`, they are identical up to upgrading the version of python, and all that depend upon it.
+See [the Conda documentation for more information](https://conda.io/docs/py2or3.htm).
+
+Normal users will not normally need to touch the miniconda verion setting.
+This is provided primary for package developers wishing to test their packages 
+with python dependencies, to ensure it works for both Python 2 and Python 3.
+See docs for defining enviroment variables in [TravisCI](https://docs.travis-ci.com/user/environment-variables/), and [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
+
 
 
 ## Bugs and suggestions
