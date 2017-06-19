@@ -112,8 +112,9 @@ provides(Conda.EnvManager{:my_env}, "libnetcdf", netcdf)
 ## Using an already existing Conda installation
 To use an already existing Conda installation, first create an environment for
 `Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
-path of the environment. You have to rebuild `Conda.jl` and many of the packages
-that have used it to install their dependancies after this, as their dependancies will need to be added that enviroment.
+path of the environment.
+You have to rebuild `Conda.jl` and many of the packages that use it after this.
+So as to install their dependancies to the specified enviroment.
 
 ```shell
 conda create -n conda_jl python
