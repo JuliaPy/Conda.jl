@@ -19,7 +19,7 @@ Setting Miniconda version is not supported for existing Root Enviroments.
 To leave Miniconda version as it is unset the CONDA_JL_VERSION enviroment variable, and rebuild.
 To change Miniconda version, you must delete the Root Enviroment, and rebuild.
 WARNING: deleting the root enviroment will delete all the packages in it.
-This will break any Julia packages that have used Conda to install their dependancies.
+This will break many Julia packages that have used Conda to install their dependancies.
 These will require rebuilding.
 """)
 end
