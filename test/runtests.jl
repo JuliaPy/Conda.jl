@@ -25,7 +25,10 @@ end
 
 @test isfile(Conda.conda_bin(env))
 Conda.add("python", env)
-@test isfile(joinpath(Conda.python_dir(env), "python" * (is_windows() ? ".exe": "")))
+pythonpath = joinpath(Conda.python_dir(env), "python" * (is_windows() ? ".exe": ""))
+@test isfile(pythonpath)
+pyversion = readstring(`$pythonpath -c "import sys; print(sys.version)"`)
+@test pyversion[1:1] == Conda.MINICONDA_VERSION
 
 channels = Conda.channels()
 @test channels == ["defaults"]

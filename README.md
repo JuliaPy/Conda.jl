@@ -112,14 +112,30 @@ provides(Conda.EnvManager{:my_env}, "libnetcdf", netcdf)
 ## Using an already existing Conda installation
 To use an already existing Conda installation, first create an environment for
 `Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
-path of the environment. You have to rebuild `Conda.jl` and all the packages
-using `Conda.jl` after this.
+path of the environment.
+You have to rebuild `Conda.jl` and many of the packages that use it after this.
+So as to install their dependancies to the specified enviroment.
 
 ```shell
 conda create -n conda_jl python
 export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
 julia -e 'Pkg.build("Conda")'
 ```
+## Miniconda Python Version
+There are two versions of Miniconda, one for Python 2, and one for Python 3.
+This controls the initial version of python uses in the setup of Conda itself,
+and thus the default version of python for all dependancies.
+You can change the version by setting the enviroment variable `CONDA_JL_VERSION` to `"3"`, prior to installing the Conda.jl package.
+The Miniconda version used in an existing conda enviroment can not be changed.
+Except for the creation of the initial `ROOTENV`, they are identical up to upgrading the version of python, and all that depend upon it.
+See [the Conda documentation for more information](https://conda.io/docs/py2or3.htm).
+
+
+Normal users will not normally need to touch the miniconda verion setting.
+This is provided primary for package developers wishing to test their packages 
+with python dependencies, to ensure it works for both Python 2 and Python 3.
+See docs for defining enviroment variables in [TravisCI](https://docs.travis-ci.com/user/environment-variables/), and [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
+
 
 
 ## Bugs and suggestions

@@ -38,7 +38,7 @@ using JSON
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
 if isfile(deps_file)
-    # Includes definition for ROOTENV
+    # Includes definition for ROOTENV, and MINICONDA_VERSION
     include(deps_file)
 else
     error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
@@ -139,7 +139,7 @@ end
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda2-latest-"
+    res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
     if is_apple()
         res *= "MacOSX"
     elseif is_linux()
