@@ -24,16 +24,12 @@ These will require rebuilding.
 """)
 end
 
-deps = """
-const ROOTENV = "$(escape_string(ROOTENV))"
-const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
-"""
-
-if !isfile("deps.jl") || readstring("deps.jl") != deps
-    write("deps.jl", deps)
-end
-
 if !isdir(ROOTENV)
     # Ensure ROOTENV exists, otherwise prefix(ROOTENV) will throw
     mkpath(ROOTENV)
 end
+
+write("deps.jl", """
+const ROOTENV = "$(escape_string(ROOTENV))"
+const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
+""")
