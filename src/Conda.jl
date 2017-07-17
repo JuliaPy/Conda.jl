@@ -153,6 +153,9 @@ function _installer_url()
     return res
 end
 
+"Supress progress bar in continuous integration environments"
+_quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
+
 Compat.Sys.iswindows() && include("outlook.jl")
 
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
@@ -196,27 +199,27 @@ function _install_conda(env::Environment, force::Bool=false)
         end
         Conda.add_channel("defaults")
         # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
-        runconda(`update -y conda`)
+        runconda(`update $(_quiet()) -y conda`)
     end
     if !isdir(prefix(env))
         # conda doesn't allow totally empty environments. using zlib as the default package
-        runconda(`create -y -p $(prefix(env)) zlib`)
+        runconda(`create $(_quiet()) -y -p $(prefix(env)) zlib`)
     end
 end
 
 "Install a new package."
 function add(pkg::AbstractString, env::Environment=ROOTENV)
-    runconda(`install -y $pkg`, env)
+    runconda(`install $(_quiet()) -y $pkg`, env)
 end
 
 "Uninstall a package."
 function rm(pkg::AbstractString, env::Environment=ROOTENV)
-    runconda(`remove -y $pkg`, env)
+    runconda(`remove $(_quiet()) -y $pkg`, env)
 end
 
 "Update all installed packages."
 function update(env::Environment=ROOTENV)
-    runconda(`update -y --all`, env)
+    runconda(`update $(_quiet()) -y --all`, env)
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
