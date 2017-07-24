@@ -2,7 +2,7 @@
 using BinDeps
 
 type EnvManager{T} <: BinDeps.PackageManager
-    packages::Vector{Compat.UTF8String}
+    packages::Vector{String}
 end
 
 "Manager for root environment"

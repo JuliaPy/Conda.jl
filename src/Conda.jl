@@ -111,7 +111,7 @@ Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
 function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var = copy(ENV)
-    to_remove = Compat.UTF8String[]
+    to_remove = String[]
     for var in keys(env_var)
         if startswith(var, "CONDA") || startswith(var, "PYTHON")
             push!(to_remove, var)
@@ -223,7 +223,7 @@ end
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict(env::Environment=ROOTENV)
     _install_conda(env)
-    package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
+    package_dict = Dict{String, Tuple{VersionNumber, String}}()
     for line in eachline(_set_conda_env(`$(conda_bin(env)) list`, env))
         line = chomp(line)
         if !startswith(line, "#")
@@ -269,7 +269,7 @@ end
 "Search a specific version of a package"
 function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
     ret=parseconda(`search $package`, env)
-    out = Compat.UTF8String[]
+    out = String[]
     for k in keys(ret)
       for i in 1:length(ret[k])
         ret[k][i]["version"]==ver && push!(out,k)
@@ -297,9 +297,9 @@ end
 function channels(env::Environment=ROOTENV)
     ret=parseconda(`config --get channels`, env)
     if haskey(ret["get"], "channels")
-        return collect(Compat.UTF8String, ret["get"]["channels"])
+        return collect(String, ret["get"]["channels"])
     else
-        return Compat.UTF8String[]
+        return String[]
     end
 end
 
