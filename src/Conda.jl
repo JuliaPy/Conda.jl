@@ -32,7 +32,6 @@ provides(Conda.Manager, "libnetcdf", netcdf)
 """
 module Conda
 using Compat
-import Compat.String
 using JSON
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
@@ -66,30 +65,30 @@ const PREFIX = prefix(ROOTENV)
 
 "Prefix for the executable files installed with the packages"
 function bin_dir(env::Environment)
-    return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
+    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
 end
 const BINDIR = bin_dir(ROOTENV)
 
 "Prefix for the shared libraries installed with the packages"
 function lib_dir(env::Environment)
-    return is_windows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
+    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
 end
 const LIBDIR = lib_dir(ROOTENV)
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
 function script_dir(env::Environment)
-    return is_windows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
+    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
 end
 const SCRIPTDIR = script_dir(ROOTENV)
 
 "Prefix where the `python` command lives"
 function python_dir(env::Environment)
-    return is_windows() ? prefix(env) : bin_dir(env)
+    return Compat.Sys.iswindows() ? prefix(env) : bin_dir(env)
 end
 const PYTHONDIR = python_dir(ROOTENV)
 
 function conda_bin(env::Environment)
-    if is_windows()
+    if Compat.Sys.iswindows()
         p = script_dir(env)
         conda_bat = joinpath(p, "conda.bat")
         return isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
@@ -111,7 +110,7 @@ Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
 function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var = copy(ENV)
-    to_remove = Compat.UTF8String[]
+    to_remove = String[]
     for var in keys(env_var)
         if startswith(var, "CONDA") || startswith(var, "PYTHON")
             push!(to_remove, var)
@@ -140,26 +139,26 @@ end
 "Get the miniconda installer URL."
 function _installer_url()
     res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
-    if is_apple()
+    if Compat.Sys.isapple()
         res *= "MacOSX"
-    elseif is_linux()
+    elseif Compat.Sys.islinux()
         res *= "Linux"
-    elseif is_windows()
+    elseif Compat.Sys.iswindows()
         res *= "Windows"
     else
         error("Unsuported OS.")
     end
     res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
-    res *= is_windows() ? ".exe" : ".sh"
+    res *= Compat.Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
 
-is_windows() && include("outlook.jl")
+Compat.Sys.iswindows() && include("outlook.jl")
 
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
-        if is_windows() && is_outlook_running()
+        if Compat.Sys.iswindows() && is_outlook_running()
             error("""\n
             Outlook is running, and running the Miniconda installer will crash it.
             Please quit Outlook and then restart the installation.
@@ -170,20 +169,20 @@ function _install_conda(env::Environment, force::Bool=false)
             """)
         end
         info("Downloading miniconda installer ...")
-        if is_unix()
+        if Compat.Sys.isunix()
             installer = joinpath(PREFIX, "installer.sh")
         end
-        if is_windows()
+        if Compat.Sys.iswindows()
             installer = joinpath(PREFIX, "installer.exe")
         end
         download(_installer_url(), installer)
 
         info("Installing miniconda ...")
-        if is_unix()
+        if Compat.Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
             run(`$installer -b -f -p $PREFIX`)
         end
-        if is_windows()
+        if Compat.Sys.iswindows()
             if VERSION >= v"0.5.0-dev+8873" # Julia PR #13780
                 run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
             else
@@ -223,7 +222,7 @@ end
 "List all installed packages as an dict of tuples with (version_number, fullname)."
 function  _installed_packages_dict(env::Environment=ROOTENV)
     _install_conda(env)
-    package_dict = Dict{Compat.UTF8String, Tuple{VersionNumber, Compat.UTF8String}}()
+    package_dict = Dict{String, Tuple{VersionNumber, String}}()
     for line in eachline(_set_conda_env(`$(conda_bin(env)) list`, env))
         line = chomp(line)
         if !startswith(line, "#")
@@ -269,7 +268,7 @@ end
 "Search a specific version of a package"
 function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
     ret=parseconda(`search $package`, env)
-    out = Compat.UTF8String[]
+    out = String[]
     for k in keys(ret)
       for i in 1:length(ret[k])
         ret[k][i]["version"]==ver && push!(out,k)
@@ -297,9 +296,9 @@ end
 function channels(env::Environment=ROOTENV)
     ret=parseconda(`config --get channels`, env)
     if haskey(ret["get"], "channels")
-        return collect(Compat.UTF8String, ret["get"]["channels"])
+        return collect(String, ret["get"]["channels"])
     else
-        return Compat.UTF8String[]
+        return String[]
     end
 end
 
