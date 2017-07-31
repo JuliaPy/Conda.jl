@@ -3,8 +3,11 @@ using Compat
 module DefaultDeps
     if isfile("deps.jl")
         include("deps.jl")
-    else
+    end
+    if !isdefined(:ROOTENV)
         const ROOTENV = abspath(dirname(@__FILE__), "usr")
+    end
+    if !isdefined(:MINICONDA_VERSION)
         const MINICONDA_VERSION = "2"
     end
 end
