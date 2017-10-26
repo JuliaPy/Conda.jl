@@ -153,7 +153,7 @@ function _installer_url()
     return res
 end
 
-"Supress progress bar in continuous integration environments"
+"Suppress progress bar in continuous integration environments"
 _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 
 Compat.Sys.iswindows() && include("outlook.jl")
