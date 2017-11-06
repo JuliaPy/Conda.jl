@@ -25,7 +25,7 @@ end
 
 @test isfile(Conda.conda_bin(env))
 Conda.add("python", env)
-pythonpath = joinpath(Conda.python_dir(env), "python" * (Compat.Sys.iswindows() ? ".exe": ""))
+pythonpath = joinpath(Conda.python_dir(env), "python" * (Compat.Sys.iswindows() ? ".exe" : ""))
 @test isfile(pythonpath)
 pyversion = readstring(`$pythonpath -c "import sys; print(sys.version)"`)
 @test pyversion[1:1] == Conda.MINICONDA_VERSION
