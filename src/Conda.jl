@@ -186,16 +186,7 @@ function _install_conda(env::Environment, force::Bool=false)
             run(`$installer -b -f -p $PREFIX`)
         end
         if Compat.Sys.iswindows()
-            if VERSION >= v"0.5.0-dev+8873" # Julia PR #13780
-                run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
-            else
-                # Workaround a bug in command-line argument parsing, see
-                # https://github.com/Luthaf/Conda.jl/issues/17
-                if match(r" {2,}", "") != nothing
-                    error("The installer will fail when the path=\"$PREFIX\" contains two consecutive spaces")
-                end
-                run(`$installer /S /AddToPath=0 /RegisterPython=0 $(split("/D=$PREFIX"))`)
-            end
+            run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
         Conda.add_channel("defaults")
         # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
