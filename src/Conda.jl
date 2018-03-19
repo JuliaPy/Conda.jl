@@ -31,8 +31,7 @@ provides(Conda.Manager, "libnetcdf", netcdf)
 ```
 """
 module Conda
-using Compat
-using JSON
+using Compat, JSON, VersionParsing
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
@@ -221,14 +220,11 @@ function  _installed_packages_dict(env::Environment=ROOTENV)
         line = chomp(line)
         if !startswith(line, "#")
             name, version, build_string = split(line)
-            # As julia do not accepts xx.yy.zz.rr version number the last part is removed.
-            # see issue https://github.com/JuliaLang/julia/issues/7282 a maximum of three levels is inserted
-            version_number = join(split(version,".")[1:min(3,end)],".")
             try
-                package_dict[name] = (convert(VersionNumber, version_number), line)
+                package_dict[name] = (vparse(version), line)
             catch
                 package_dict[name] = (v"9999.9999.9999", line)
-                warn("Failed parsing string: \"$(version_number)\" to a version number. Please open an issue!")
+                warn("Failed parsing string: \"$(version)\" to a version number. Please open an issue!")
             end
         end
     end
