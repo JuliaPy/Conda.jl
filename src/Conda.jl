@@ -56,7 +56,7 @@ end
 
 function prefix(path::AbstractString)
     if !isdir(path)
-        throw(ArgumentError("Path to conda environment is not valid."))
+        throw(ArgumentError("Path to conda environment is not valid: $path"))
     end
     return path
 end
