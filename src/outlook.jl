@@ -2,7 +2,7 @@
 # to work around a bug in the Miniconda installer, which crashes Outlook
 # if it is running.  See Luthaf/Conda.jl#15
 
-immutable PROCESSENTRY32
+struct PROCESSENTRY32
     dwSize::Int32
     cntUsage::Int32
     th32ProcessID::Int32
