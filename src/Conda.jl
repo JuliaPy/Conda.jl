@@ -86,21 +86,18 @@ function python_dir(env::Environment)
 end
 const PYTHONDIR = python_dir(ROOTENV)
 
-function conda_bin(env::Environment)
-    if Compat.Sys.iswindows()
-        p = script_dir(env)
-        conda_bat = joinpath(p, "conda.bat")
-        return isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
-    else
-        return joinpath(script_dir(env), "conda")
-    end
+# note: the same conda program is used for all environments
+const conda = if Compat.Sys.iswindows()
+    p = script_dir(ROOTENV)
+    conda_bat = joinpath(p, "conda.bat")
+    isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
+else
+    joinpath(bin_dir(ROOTENV), "conda")
 end
-const conda = conda_bin(ROOTENV)
 
 "Path to the condarc file"
 conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
 const CONDARC = conda_rc(ROOTENV)
-
 
 """
 Use a cleaned up environment for the command `cmd`.
@@ -119,20 +116,20 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
         pop!(env_var, var)
     end
     env_var["CONDARC"] = conda_rc(env)
-    env_var["CONDA_PREFIX"] = env_var["CONDA_DEFAULT_ENV"] = prefix(env)
+    env_var["CONDA_PREFIX"] = prefix(env)
     setenv(cmd, env_var)
 end
 
 "Run conda command with environment variables set."
 function runconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
-    run(_set_conda_env(`$(conda_bin(env)) $args`, env))
+    run(_set_conda_env(`$conda $args`, env))
 end
 
 "Run conda command with environment variables set and return the json output as a julia object"
 function parseconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
-    JSON.parse(readstring(_set_conda_env(`$(conda_bin(env)) $args --json`, env)))
+    JSON.parse(read(_set_conda_env(`$conda $args --json`, env), String))
 end
 
 "Get the miniconda installer URL."
@@ -170,7 +167,7 @@ function _install_conda(env::Environment, force::Bool=false)
                 https://github.com/conda/conda/issues/1084
             """)
         end
-        info("Downloading miniconda installer ...")
+        Compat.@info("Downloading miniconda installer ...")
         if Compat.Sys.isunix()
             installer = joinpath(PREFIX, "installer.sh")
         end
@@ -179,7 +176,7 @@ function _install_conda(env::Environment, force::Bool=false)
         end
         download(_installer_url(), installer)
 
-        info("Installing miniconda ...")
+        Compat.@info("Installing miniconda ...")
         if Compat.Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
             run(`$installer -b -f -p $PREFIX`)
@@ -192,8 +189,7 @@ function _install_conda(env::Environment, force::Bool=false)
         runconda(`update $(_quiet()) -y conda`)
     end
     if !isdir(prefix(env))
-        # conda doesn't allow totally empty environments. using zlib as the default package
-        runconda(`create $(_quiet()) -y -p $(prefix(env)) zlib`)
+        runconda(`create $(_quiet()) -y -p $(prefix(env))`)
     end
 end
 
@@ -216,7 +212,7 @@ end
 function  _installed_packages_dict(env::Environment=ROOTENV)
     _install_conda(env)
     package_dict = Dict{String, Tuple{VersionNumber, String}}()
-    for line in eachline(_set_conda_env(`$(conda_bin(env)) list`, env))
+    for line in eachline(_set_conda_env(`$conda list`, env))
         line = chomp(line)
         if !startswith(line, "#")
             name, version, build_string = split(line)
@@ -269,7 +265,7 @@ end
 
 "Check if a given package exists."
 function exists(package::AbstractString, env::Environment=ROOTENV)
-    if contains(package,"==")
+    if occursin("==", package)
       pkg,ver=split(package,"==")  # Remove version if provided
       return pkg in search(pkg,ver,env)
     else

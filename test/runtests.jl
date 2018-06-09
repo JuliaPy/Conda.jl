@@ -1,37 +1,22 @@
-using Conda
-using BinDeps
-using Base.Test
-using Compat
+using Conda, BinDeps, Compat, VersionParsing
+using Compat.Test
 
-env = Conda.Environment(:test_conda_jl)
+env = :test_conda_jl
 @test Conda.exists("curl", env)
 Conda.add("curl", env)
 
-if Compat.Sys.isunix()
-    curl_path = joinpath(Conda.prefix(env), "bin", "curl-config")
-end
-if Compat.Sys.iswindows()
-    curl_path = joinpath(Conda.lib_dir(env), "curl.exe")
-end
+exe = Compat.Sys.iswindows() ? ".exe" : ""
 
+curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
 @test isfile(curl_path)
 
-@test isfile(joinpath(Conda.bin_dir(env), basename(curl_path)))
-
 Conda.rm("curl", env)
-if Compat.Sys.isunix()
-    @test !isfile(curl_path)
-end
+@test !isfile(curl_path)
 
-@test isfile(Conda.conda_bin(env))
-Conda.add("python", env)
-pythonpath = joinpath(Conda.python_dir(env), "python" * (Compat.Sys.iswindows() ? ".exe" : ""))
+pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
 @test isfile(pythonpath)
-pyversion = readstring(`$pythonpath -c "import sys; print(sys.version)"`)
+pyversion = read(`$pythonpath -c "import sys; print(sys.version)"`, String)
 @test pyversion[1:1] == Conda.MINICONDA_VERSION
-
-channels = Conda.channels()
-@test channels == ["defaults"]
 
 Conda.add_channel("foo", env)
 @test Conda.channels(env) == ["foo", "defaults"]
@@ -39,5 +24,4 @@ Conda.add_channel("foo", env)
 Conda.add_channel("foo", env)
 
 Conda.rm_channel("foo", env)
-channels = Conda.channels(env)
-@test channels == ["defaults"]
+@test Conda.channels(env) == ["defaults"]
