@@ -13,6 +13,8 @@ exe = Compat.Sys.iswindows() ? ".exe" : ""
 curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
 @test isfile(curl_path)
 
+@test "curl" in Conda.search("cu*", env)
+
 Conda.rm("curl", env)
 @test !isfile(curl_path)
 
