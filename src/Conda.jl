@@ -241,13 +241,12 @@ function list(env::Environment=ROOTENV)
     runconda(`list`, env)
 end
 
-"Get the exact version of a package."
+"Get the exact version of a package as a `VersionNumber`."
 function version(name::AbstractString, env::Environment=ROOTENV)
     packages = parseconda(`list`, env)
     for package in packages
-        if startswith(package, name) || ismatch(Regex("::$name"), package)
-            return package
-        end
+        pname = get(package, "name", "")
+        startswith(pname, name) && return vparse(package["version"])
     end
     error("Could not find the $name package")
 end
