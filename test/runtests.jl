@@ -1,6 +1,8 @@
 using Conda, BinDeps, Compat, VersionParsing
 using Compat.Test
 
+Conda.update()
+
 env = :test_conda_jl
 @test Conda.exists("curl", env)
 Conda.add("curl", env)

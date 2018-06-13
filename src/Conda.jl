@@ -205,7 +205,11 @@ end
 
 "Update all installed packages."
 function update(env::Environment=ROOTENV)
-    runconda(`update $(_quiet()) -y --all`, env)
+    if env == ROOTENV
+        runconda(`update $(_quiet()) -y --all conda`, env)
+    else
+        runconda(`update $(_quiet()) -y --all`, env)
+    end
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
