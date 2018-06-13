@@ -258,12 +258,15 @@ function search(package::AbstractString, env::Environment=ROOTENV)
 end
 
 "Search a specific version of a package"
-function search(package::AbstractString, ver::AbstractString, env::Environment=ROOTENV)
+function search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}, env::Environment=ROOTENV)
     ret=parseconda(`search $package`, env)
     out = String[]
+    ver = string(_ver)
+    verv = vparse(ver)
     for k in keys(ret)
       for i in 1:length(ret[k])
-        ret[k][i]["version"]==ver && push!(out,k)
+        kver = ret[k][i]["version"]
+        (kver==ver || vparse(kver)==verv) && push!(out,k)
       end
     end
     out

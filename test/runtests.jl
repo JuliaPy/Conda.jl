@@ -6,7 +6,10 @@ Conda.update()
 env = :test_conda_jl
 @test Conda.exists("curl", env)
 Conda.add("curl", env)
-@test Conda.version("curl",env) >= v"5.0"
+
+curlvers = Conda.version("curl",env)
+@test curlvers >= v"5.0"
+@test Conda.exists("curl==$curlvers", env)
 
 exe = Compat.Sys.iswindows() ? ".exe" : ""
 
