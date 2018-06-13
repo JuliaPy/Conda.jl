@@ -123,7 +123,9 @@ end
 "Run conda command with environment variables set."
 function runconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
+    Compat.@info("Running $(`conda $args`) in $(env==ROOTENV ? "root" : env) environment")
     run(_set_conda_env(`$conda $args`, env))
+    return nothing
 end
 
 "Run conda command with environment variables set and return the json output as a julia object"
