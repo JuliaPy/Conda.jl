@@ -115,6 +115,7 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     for var in to_remove
         pop!(env_var, var)
     end
+    env_var["PYTHONIOENCODING"]="UTF-8"
     env_var["CONDARC"] = conda_rc(env)
     env_var["CONDA_PREFIX"] = prefix(env)
     setenv(cmd, env_var)
