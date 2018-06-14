@@ -155,21 +155,9 @@ end
 "Suppress progress bar in continuous integration environments"
 _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 
-Compat.Sys.iswindows() && include("outlook.jl")
-
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
-        if Compat.Sys.iswindows() && is_outlook_running()
-            error("""\n
-            Outlook is running, and running the Miniconda installer will crash it.
-            Please quit Outlook and then restart the installation.
-
-            For more information, see:
-                https://github.com/Luthaf/Conda.jl/issues/15
-                https://github.com/conda/conda/issues/1084
-            """)
-        end
         Compat.@info("Downloading miniconda installer ...")
         if Compat.Sys.isunix()
             installer = joinpath(PREFIX, "installer.sh")
