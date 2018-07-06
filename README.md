@@ -3,7 +3,6 @@
 [![Build Status -- OS X and Linux](https://travis-ci.org/JuliaPy/Conda.jl.svg?branch=master)](https://travis-ci.org/JuliaPy/Conda.jl)
 [![Build status -- Windows](https://ci.appveyor.com/api/projects/status/edlxohso05re3v40/branch/master?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/conda-jl)
 
-
 This package allows one to use [conda](http://conda.pydata.org/) as a binary
 provider for Julia. While other binary providers like
 [Homebrew.jl](https://github.com/JuliaLang/Homebrew.jl),
@@ -121,21 +120,19 @@ conda create -n conda_jl python
 export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
 julia -e 'Pkg.build("Conda")'
 ```
-## Miniconda Python Version
-There are two versions of Miniconda, one for Python 2, and one for Python 3.
-This controls the initial version of python uses in the setup of Conda itself,
-and thus the default version of python for all dependancies.
-You can change the version by setting the enviroment variable `CONDA_JL_VERSION` to `"3"`, prior to installing the Conda.jl package.
-The Miniconda version used in an existing conda enviroment can not be changed.
-Except for the creation of the initial `ROOTENV`, they are identical up to upgrading the version of python, and all that depend upon it.
-See [the Conda documentation for more information](https://conda.io/docs/py2or3.htm).
+## Using Python 2
+By default, the Conda.jl package [installs Python 3]((https://conda.io/docs/py2or3.htm)),
+and this version of Python is used for all Python dependencies.  If you want to
+use Python 2 instead, set `CONDA_JL_VERSION` to `"2"` *prior to installing Conda*.
+(This only needs to be done once; Conda subsequently remembers the version setting.)
 
+Once you have installed Conda and run its Miniconda installer, the Python version
+cannot be changed without deleting your existing Miniconda installation.
+If you set `ENV["CONDA_JL_VERSION"]="2"` and run `Pkg.build("Conda")`, it will
+tell you how to delete your existing Miniconda installation if needed.
 
-Normal users will not normally need to touch the miniconda verion setting.
-This is provided primary for package developers wishing to test their packages 
-with python dependencies, to ensure it works for both Python 2 and Python 3.
-See docs for defining enviroment variables in [TravisCI](https://docs.travis-ci.com/user/environment-variables/), and [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
-
+Most users will not need to use Python 2. This is provided primarily for developers wishing to test their packages for both Python 2 and Python, e.g. by setting the `CONDA_JL_VERSION`
+variable on [TravisCI](https://docs.travis-ci.com/user/environment-variables/) and/or [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
 
 
 ## Bugs and suggestions
