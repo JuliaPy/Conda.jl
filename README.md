@@ -117,7 +117,7 @@ You have to rebuild `Conda.jl` and many of the packages that use it after this.
 So as to install their dependancies to the specified enviroment.
 
 ```shell
-conda create -n conda_jl python
+conda create -n conda_jl python conda
 export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
 julia -e 'Pkg.build("Conda")'
 ```
