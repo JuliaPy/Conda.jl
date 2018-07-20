@@ -8,7 +8,7 @@ module DefaultDeps
         const ROOTENV = abspath(dirname(@__FILE__), "usr")
     end
     if !isdefined(:MINICONDA_VERSION)
-        const MINICONDA_VERSION = "2"
+        const MINICONDA_VERSION = "3"
     end
 end
 
