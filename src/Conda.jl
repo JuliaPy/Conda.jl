@@ -2,8 +2,7 @@ __precompile__()
 
 """
 The Conda module provides access to the [conda](http://conda.pydata.org/) packages
-manager. Its main purpose is to be used as a BinDeps provider, to install binary
-dependencies of other Julia packages.
+manager to install binary dependencies of other Julia packages.
 
 The main functions in Conda are:
 
@@ -14,20 +13,6 @@ The main functions in Conda are:
 - `Conda.add_channel(channel)`: add a channel to the list of channels;
 - `Conda.channels()`: get the current list of channels;
 - `Conda.rm_channel(channel)`: remove a channel from the list of channels;
-
-To use Conda as a binary provider for BinDeps, the `Conda.Manager` type is proposed. A
-small example looks like this:
-
-```julia
-# Declare dependency
-using BinDeps
-@BinDeps.setup
-netcdf = library_dependency("netcdf", aliases = ["libnetcdf","libnetcdf4"])
-
-using Conda
-#  Use alternative conda channel.
-Conda.add_channel("my_channel")
-provides(Conda.Manager, "libnetcdf", netcdf)
 ```
 """
 module Conda
@@ -294,7 +279,5 @@ end
 function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --remove channels $channel --force`, env)
 end
-
-include("bindeps_conda.jl")
 
 end

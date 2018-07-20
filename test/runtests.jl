@@ -1,4 +1,4 @@
-using Conda, BinDeps, Compat, VersionParsing
+using Conda, Compat, VersionParsing
 using Compat.Test
 
 Conda.update()
