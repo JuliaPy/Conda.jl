@@ -32,7 +32,7 @@ const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 """
 
-if !isfile("deps.jl") || readstring("deps.jl") != deps
+if !isfile("deps.jl") || String(read("deps.jl")) != deps
     write("deps.jl", deps)
 end
 
