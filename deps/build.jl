@@ -4,11 +4,20 @@ module DefaultDeps
     if isfile("deps.jl")
         include("deps.jl")
     end
-    if !(@isdefined ROOTENV)
-        const ROOTENV = abspath(dirname(@__FILE__), "usr")
-    end
-    if !(@isdefined MINICONDA_VERSION)
-        const MINICONDA_VERSION = "3"
+    if isdefined(Base, Symbol("@isdefined"))
+        if !(@isdefined ROOTENV)
+            const ROOTENV = abspath(dirname(@__FILE__), "usr")
+        end
+        if !(@isdefined MINICONDA_VERSION)
+            const MINICONDA_VERSION = "3"
+        end
+    else
+        if !isdefined(:ROOTENV)
+            const ROOTENV = abspath(dirname(@__FILE__), "usr")
+        end
+        if !isdefined(:MINICONDA_VERSION)
+            const MINICONDA_VERSION = "3"
+        end
     end
 end
 
@@ -32,7 +41,7 @@ const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 """
 
-if !isfile("deps.jl") || String(read("deps.jl")) != deps
+if !isfile("deps.jl") || read("deps.jl", String) != deps
     write("deps.jl", deps)
 end
 
