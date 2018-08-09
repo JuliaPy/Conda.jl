@@ -1,6 +1,7 @@
 using Compat
 
 module DefaultDeps
+    using Compat
     if isfile("deps.jl")
         include("deps.jl")
     end
