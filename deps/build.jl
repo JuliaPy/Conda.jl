@@ -1,13 +1,14 @@
 using Compat
 
 module DefaultDeps
+    using Compat
     if isfile("deps.jl")
         include("deps.jl")
     end
-    if !isdefined(:ROOTENV)
+    if !isdefined(@__MODULE__, :ROOTENV)
         const ROOTENV = abspath(dirname(@__FILE__), "usr")
     end
-    if !isdefined(:MINICONDA_VERSION)
+    if !isdefined(@__MODULE__, :MINICONDA_VERSION)
         const MINICONDA_VERSION = "3"
     end
 end
@@ -32,7 +33,7 @@ const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 """
 
-if !isfile("deps.jl") || readstring("deps.jl") != deps
+if !isfile("deps.jl") || read("deps.jl", String) != deps
     write("deps.jl", deps)
 end
 
