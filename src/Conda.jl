@@ -52,6 +52,7 @@ function bin_dir(env::Environment)
     return Compat.Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
 end
 const BINDIR = bin_dir(ROOTENV)
+ENV["PATH"] = BINDIR * ";" * ENV["PATH"]
 
 "Prefix for the shared libraries installed with the packages"
 function lib_dir(env::Environment)
