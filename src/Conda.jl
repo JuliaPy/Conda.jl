@@ -103,7 +103,53 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var["PYTHONIOENCODING"]="UTF-8"
     env_var["CONDARC"] = conda_rc(env)
     env_var["CONDA_PREFIX"] = prefix(env)
+    _set_path(env_var, env)
     setenv(cmd, env_var)
+end
+
+const path_sep = Compat.Sys.iswindows() ? ';' : ':'
+
+function _set_path(env_var, env::Environment)
+    if Compat.Sys.iswindows()
+        # Environment variables are case-insensitive.  `Base.EnvDict`
+        # treats case sensitivity but `env_var` is an arbitrary
+        # dicttionary.  So, we need to treat case-insensitive lookup
+        # ourselves:
+        all_keys = collect(keys(env_var))
+        ikey = findfirst(x -> uppercase(x) == "PATH", all_keys)
+        has_key = ikey !== nothing
+        path_key = all_keys[ikey]
+    else
+        path_key = "PATH"
+        has_key = haskey(env_var, path_key)
+    end
+
+    if has_key
+        env_var[path_key] = extra_path(env) * path_sep * env_var[path_key]
+    else
+        env_var[path_key] = extra_path(env)
+    end
+end
+
+"""
+    extra_path(env::Environment)
+
+Extra `ENV["PATH"]` required for conda environment `env`.
+"""
+function extra_path(env::Environment)
+    if Compat.Sys.iswindows()
+        return join([
+            prefix(env),
+            joinpath(prefix(env), "Library", "mingw-w64", "bin"),
+            joinpath(prefix(env), "Library", "usr", "bin"),
+            joinpath(prefix(env), "Library", "bin"),
+            joinpath(prefix(env), "Scripts"),
+            joinpath(prefix(env), "bin"),
+        ], path_sep)
+        # https://github.com/conda/conda/blob/4.6.0b0/conda/activate.py#L399-L404
+    else
+        return bin_dir(env)
+    end
 end
 
 "Run conda command with environment variables set."
