@@ -1,9 +1,24 @@
 environment:
   matrix:
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x86/0.6/julia-0.6-latest-win32.exe"
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
-  - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x86/julia-latest-win32.exe"
-  - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
+  - julia_version: 0.6
+  - julia_version: 0.7
+  - julia_version: 1
+  - julia_version: nightly
+
+platform:
+  - x86 # 32-bit
+  - x64 # 64-bit
+
+# # Uncomment the following lines to allow failures on nightly julia
+# # (tests will run but not make your overall status red)
+# matrix:
+#   allow_failures:
+#   - julia_version: nightly
+
+branches:
+  only:
+    - master
+    - /release-.*/
 
 notifications:
   - provider: Email
@@ -12,16 +27,20 @@ notifications:
     on_build_status_changed: true
 
 install:
-  - ps: "[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12"
-  - ps: (new-object net.webclient).DownloadFile(
-        $env:JULIA_URL,
-        "C:\projects\julia-binary.exe")
-  - C:\projects\julia-binary.exe /S /D=C:\projects\julia
+  - ps: iex ((new-object net.webclient).DownloadString("https://raw.githubusercontent.com/JuliaCI/Appveyor.jl/version-1/bin/install.ps1"))
 
 build_script:
-  - IF EXIST .git\shallow (git fetch --unshallow)
-  # Test #17 by using ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\")
-  - C:\projects\julia\bin\julia -e "versioninfo(); p = joinpath(homedir(),\"Conda test home\"); mkdir(p); ENV[\"HOME\"]=p; Pkg.clone(pwd(), \"Conda\"); Pkg.build(\"Conda\")"
+  - echo "%JL_BUILD_SCRIPT%"
+  - SET HOME=%userprofile%\Conda test home
+  - C:\julia\bin\julia -e "%JL_BUILD_SCRIPT%"
 
 test_script:
-  - C:\projects\julia\bin\julia --check-bounds=yes -e "ENV[\"HOME\"]=joinpath(homedir(),\"Conda test home\"); Pkg.test(\"Conda\")"
+  - echo "%JL_TEST_SCRIPT%"
+  - SET HOME=%userprofile%\Conda test home
+  - C:\julia\bin\julia -e "%JL_TEST_SCRIPT%"
+
+# # Uncomment to support code coverage upload. Should only be enabled for packages
+# # which would have coverage gaps without running on Windows
+# on_success:
+#   - echo "%JL_CODECOV_SCRIPT%"
+#   - C:\julia\bin\julia -e "%JL_CODECOV_SCRIPT%"
