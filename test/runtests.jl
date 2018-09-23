@@ -22,6 +22,8 @@ Conda.add("curl", env)
     @test_throws Exception run(cmd)
     Conda.add("pyzmq", env)
     run(cmd)
+
+    Conda.add("jupyter", env)
 end
 
 curlvers = Conda.version("curl",env)
