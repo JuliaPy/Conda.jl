@@ -3,6 +3,24 @@ using Compat
 using Compat: @info
 using Compat.Test
 
+@testset "_set_path" begin
+    env_var = Dict("PATH" => "somewhere")
+    Conda._set_path(env_var, :dummy)
+    @test endswith(env_var["PATH"], "somewhere")
+    @test occursin("dummy", env_var["PATH"])
+
+    env_var = Dict{String, String}()
+    Conda._set_path(env_var, :dummy)
+    @test occursin("dummy", env_var["PATH"])
+
+    if Compat.Sys.iswindows()
+        env_var = Dict("PaTh" => "somewhere")
+        Conda._set_path(env_var, :dummy)
+        @test endswith(env_var["PaTh"], "somewhere")
+        @test occursin("dummy", env_var["PaTh"])
+    end
+end
+
 exe = Compat.Sys.iswindows() ? ".exe" : ""
 
 Conda.update()

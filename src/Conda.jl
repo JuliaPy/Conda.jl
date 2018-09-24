@@ -118,7 +118,7 @@ function _set_path(env_var, env::Environment)
         all_keys = collect(keys(env_var))
         ikey = findfirst(x -> uppercase(x) == "PATH", all_keys)
         has_key = ikey !== nothing
-        path_key = all_keys[ikey]
+        path_key = has_key ? all_keys[ikey] : "PATH"
     else
         path_key = "PATH"
         has_key = haskey(env_var, path_key)
