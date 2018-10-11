@@ -10,11 +10,11 @@ module DefaultDeps
     elseif isfile(Main.condadeps)
         include(Main.condadeps)
     end
-    if !isdefined(@__MODULE__, :ROOTENV)
-        const ROOTENV = Main.condadir
-    end
     if !isdefined(@__MODULE__, :MINICONDA_VERSION)
         const MINICONDA_VERSION = "3"
+    end
+    if !isdefined(@__MODULE__, :ROOTENV)
+        const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
     end
 end
 
