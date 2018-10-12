@@ -1,15 +1,20 @@
 using Compat
 
+const condadir = abspath(homedir(), ".julia", "conda")
+const condadeps = joinpath(condadir, "deps.jl")
+
 module DefaultDeps
     using Compat
     if isfile("deps.jl")
         include("deps.jl")
-    end
-    if !isdefined(@__MODULE__, :ROOTENV)
-        const ROOTENV = abspath(dirname(@__FILE__), "usr")
+    elseif isfile(Main.condadeps)
+        include(Main.condadeps)
     end
     if !isdefined(@__MODULE__, :MINICONDA_VERSION)
         const MINICONDA_VERSION = "3"
+    end
+    if !isdefined(@__MODULE__, :ROOTENV)
+        const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
     end
 end
 
@@ -33,11 +38,11 @@ const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 """
 
-if !isfile("deps.jl") || read("deps.jl", String) != deps
-    write("deps.jl", deps)
-end
+mkpath(condadir)
+mkpath(ROOTENV)
 
-if !isdir(ROOTENV)
-    # Ensure ROOTENV exists, otherwise prefix(ROOTENV) will throw
-    mkpath(ROOTENV)
+for depsfile in ("deps.jl", condadeps)
+    if !isfile(depsfile) || read(depsfile, String) != deps
+        write(depsfile, deps)
+    end
 end
