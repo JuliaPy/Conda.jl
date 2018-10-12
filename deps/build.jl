@@ -1,6 +1,6 @@
 using Compat
 
-const condadir = abspath(homedir(), ".julia", "conda")
+const condadir = abspath(first(DEPOT_PATH), "conda")
 const condadeps = joinpath(condadir, "deps.jl")
 
 module DefaultDeps
