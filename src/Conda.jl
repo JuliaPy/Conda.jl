@@ -128,13 +128,6 @@ function _installer_url()
     elseif Compat.Sys.islinux()
         res *= "Linux"
     elseif Compat.Sys.iswindows()
-        if MINICONDA_VERSION == "3"
-            # Quick fix for:
-            # * https://github.com/JuliaLang/IJulia.jl/issues/739
-            # * https://github.com/ContinuumIO/anaconda-issues/issues/10082
-            # * https://github.com/conda/conda/issues/7789
-            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-4.5.4-"
-        end
         res *= "Windows"
     else
         error("Unsuported OS.")
@@ -146,6 +139,17 @@ end
 
 "Suppress progress bar in continuous integration environments"
 _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
+
+"""
+Python version to be used when `MINICONDA_VERSION == "3"`.  As it
+takes time for conda packages to be registered after new Python is
+released, it is useful to delay updating Python interpreter.
+See: https://github.com/JuliaPy/Conda.jl/issues/127
+
+Note that https://github.com/JuliaPy/Conda.jl/issues/125 must be
+resolved before bumping this to 3.7.
+"""
+const _default_python3 = "python=3.6"
 
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
@@ -168,6 +172,10 @@ function _install_conda(env::Environment, force::Bool=false)
             run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
         Conda.add_channel("defaults")
+        if MINICONDA_VERSION == "3"
+            add(_default_python3, env)
+            pin(_default_python3, env)
+        end
         # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
         runconda(`update $(_quiet()) -y conda`)
     end
@@ -285,6 +293,38 @@ end
 "Remove a channel from the list of channels"
 function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --remove channels $channel --force`, env)
+end
+
+"""
+    Conda.pin(sepc, [env])
+
+Pin version of given package.  Use `Conda.free` to unpin the package.
+
+# Examples
+```
+julia> Conda.pin("matplotlib<3")
+julia> Conda.pin("pandas=0.23")
+julia> Conda.pin("defaults::numpy")
+```
+"""
+function pin(spec::AbstractString, env::Environment=ROOTENV)
+    runconda(`config --add pinned_packages $spec`, env)
+end
+
+"""
+    Conda.free(sepc, [env])
+
+Remove `spec` from `pinned_packages` configuration.
+
+# Examples
+```
+julia> Conda.free("matplotlib<3")
+julia> Conda.free("pandas=0.23")
+julia> Conda.free("defaults::numpy")
+```
+"""
+function free(spec::AbstractString, env::Environment=ROOTENV)
+    runconda(`config --remove pinned_packages $spec`, env)
 end
 
 end
