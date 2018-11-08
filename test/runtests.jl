@@ -48,3 +48,15 @@ Conda.add_channel("foo", env)
 
 Conda.rm_channel("foo", env)
 @test Conda.channels(env) == ["defaults"]
+
+@testset "Batch install and uninstall" begin
+    Conda.add(["wget", "zip"], env)
+    installed = Conda._installed_packages(env)
+    @test "wget" ∈ installed
+    @test "zip" ∈ installed
+
+    Conda.rm(["wget", "zip"], env)
+    installed = Conda._installed_packages(env)
+    @test "wget" ∉ installed
+    @test "zip" ∉ installed
+end
