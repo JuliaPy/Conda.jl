@@ -176,13 +176,15 @@ function _install_conda(env::Environment, force::Bool=false)
     end
 end
 
-"Install a new package."
-function add(pkg::AbstractString, env::Environment=ROOTENV)
+const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
+
+"Install a new package or packages."
+function add(pkg::PkgOrPkgs, env::Environment=ROOTENV)
     runconda(`install $(_quiet()) -y $pkg`, env)
 end
 
-"Uninstall a package."
-function rm(pkg::AbstractString, env::Environment=ROOTENV)
+"Uninstall a package or packages."
+function rm(pkg::PkgOrPkgs, env::Environment=ROOTENV)
     runconda(`remove $(_quiet()) -y $pkg`, env)
 end
 
