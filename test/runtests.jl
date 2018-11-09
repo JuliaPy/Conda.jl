@@ -50,13 +50,13 @@ Conda.rm_channel("foo", env)
 @test Conda.channels(env) == ["defaults"]
 
 @testset "Batch install and uninstall" begin
-    Conda.add(["wget", "zip"], env)
+    Conda.add(["affine", "ansi2html"], env)
     installed = Conda._installed_packages(env)
-    @test "wget" ∈ installed
-    @test "zip" ∈ installed
+    @test "affine" ∈ installed
+    @test "ansi2html" ∈ installed
 
-    Conda.rm(["wget", "zip"], env)
+    Conda.rm(["affine", "ansi2html"], env)
     installed = Conda._installed_packages(env)
-    @test "wget" ∉ installed
-    @test "zip" ∉ installed
+    @test "affine" ∉ installed
+    @test "ansi2html" ∉ installed
 end
