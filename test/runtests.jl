@@ -63,3 +63,19 @@ end
 
 # Run conda clean
 Conda.clean(; debug=true)
+
+@testset "Exporting and creating environments" begin
+    new_env = :test_conda_jl_2
+    Conda.add("curl", env)
+    Conda.freeze("conda-pkg.txt", env)
+
+    # Create a new environment
+    rm(Conda.prefix(new_env); force=true, recursive=true)
+    Conda.create("conda-pkg.txt", new_env; channels=["defaults", "conda-forge"])
+
+    # Ensure that our new environment has our channels and package installed.
+    Conda.channels(new_env) == ["defaults", "conda-forge"]
+    installed = Conda._installed_packages(new_env)
+    @test "curl" ∈ installed
+    rm("conda-pkg.txt")
+end

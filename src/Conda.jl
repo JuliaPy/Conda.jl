@@ -224,6 +224,17 @@ function list(env::Environment=ROOTENV)
     runconda(`list`, env)
 end
 
+"""
+List all packages and write them to an export file for use the Conda.create
+NOTE: Because export is a reserved word we use the term freeze from python
+"""
+function freeze(filepath::AbstractString, env::Environment=ROOTENV)
+    _install_conda(env)
+    open(filepath, "w") do fobj
+        write(fobj, read(_set_conda_env(`$conda list --export`, env)))
+    end
+end
+
 "Get the exact version of a package as a `VersionNumber`."
 function version(name::AbstractString, env::Environment=ROOTENV)
     packages = parseconda(`list`, env)
@@ -316,6 +327,19 @@ function clean(;
     ]
     cmd = Cmd([conda, "clean", "--yes", flags[kwargs]...])
     run(_set_conda_env(cmd))
+end
+
+"Create a new environment with various channels and a packages file."
+function create(
+    filepath::AbstractString,
+    env::Environment=ROOTENV;
+    channels=String[]
+)
+    channel_str = ["-c $channel" for channel in channels]
+    run(_set_conda_env(
+        `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
+        env
+    ))
 end
 
 end
