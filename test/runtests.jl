@@ -60,3 +60,6 @@ Conda.rm_channel("foo", env)
     @test "affine" ∉ installed
     @test "ansi2html" ∉ installed
 end
+
+# Run conda clean
+Conda.cleanall(; debug=true)
