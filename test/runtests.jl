@@ -67,7 +67,7 @@ Conda.clean(; debug=true)
 @testset "Exporting and creating environments" begin
     new_env = :test_conda_jl_2
     Conda.add("curl", env)
-    Conda.freeze("conda-pkg.txt", env)
+    Conda.export_list("conda-pkg.txt", env)
 
     # Create a new environment
     rm(Conda.prefix(new_env); force=true, recursive=true)

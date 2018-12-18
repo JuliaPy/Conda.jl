@@ -228,14 +228,14 @@ end
 List all packages and write them to an export file for use the Conda.create
 NOTE: Because export is a reserved word we use the term freeze from python
 """
-function freeze(filepath::AbstractString, env::Environment=ROOTENV)
+function export_list(filepath::AbstractString, env::Environment=ROOTENV)
     _install_conda(env)
     open(filepath, "w") do fobj
-        freeze(fobj, env)
+        export_list(fobj, env)
     end
 end
 
-function freeze(io::IO, env::Environment=ROOTENV)
+function export_list(io::IO, env::Environment=ROOTENV)
     write(io, read(_set_conda_env(`$conda list --export`, env)))
 end
 
