@@ -231,8 +231,12 @@ NOTE: Because export is a reserved word we use the term freeze from python
 function freeze(filepath::AbstractString, env::Environment=ROOTENV)
     _install_conda(env)
     open(filepath, "w") do fobj
-        write(fobj, read(_set_conda_env(`$conda list --export`, env)))
+        freeze(fobj, env)
     end
+end
+
+function freeze(io::IO, env::Environment=ROOTENV)
+    write(io, read(_set_conda_env(`$conda list --export`, env)))
 end
 
 "Get the exact version of a package as a `VersionNumber`."
@@ -340,6 +344,14 @@ function create(
         `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
         env
     ))
+end
+
+function create(io::IO, args...; kwargs...)
+    mktemp() do path, fobj
+        write(fobj, read(io))
+        close(fobj)
+        create(path, args...; kwargs...)
+    end
 end
 
 end
