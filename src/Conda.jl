@@ -225,6 +225,9 @@ function list(env::Environment=ROOTENV)
 end
 
 """
+    export_list(filepath, env=$ROOTENV)
+    export_list(io, env=$ROOTENV)
+
 List all packages and write them to an export file for use the Conda.create
 NOTE: Because export is a reserved word we use the term freeze from python
 """
@@ -333,7 +336,12 @@ function clean(;
     run(_set_conda_env(cmd))
 end
 
-"Create a new environment with various channels and a packages file."
+""""
+    create(filename, env=$ROOTENV, channels=String[])
+    create(io, env=$ROOTENV, channels=String[])
+
+Create a new environment with various channels and a packages file.
+"""
 function create(
     filepath::AbstractString,
     env::Environment=ROOTENV;
