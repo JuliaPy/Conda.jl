@@ -289,20 +289,15 @@ function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --remove channels $channel --force`, env)
 end
 
-"Cleanup all unused packages and caches"
-function cleanall(; debug=false)
-    clean(; debug=debug, index=true, locks=true, tarballs=true, packages=true, sources=true)
-end
-
 """
     clean(;
-        debug=false, index=false, locks=false, tarballs=false, packages=false, sources=false
+        debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
     )
 
 Runs `conda clean -y` with the specified flags. If
 """
 function clean(;
-    debug=false, index=false, locks=false, tarballs=false, packages=false, sources=false
+    debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
 )
     kwargs = [debug, index, locks, tarballs, packages, sources]
     if !any(kwargs[2:end])

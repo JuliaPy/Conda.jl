@@ -62,4 +62,4 @@ Conda.rm_channel("foo", env)
 end
 
 # Run conda clean
-Conda.cleanall(; debug=true)
+Conda.clean(; debug=true)
