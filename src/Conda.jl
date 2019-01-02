@@ -294,7 +294,7 @@ end
         debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
     )
 
-Runs `conda clean -y` with the specified flags. If
+Runs `conda clean -y` with the specified flags.
 """
 function clean(;
     debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
@@ -302,8 +302,7 @@ function clean(;
     kwargs = [debug, index, locks, tarballs, packages, sources]
     if !any(kwargs[2:end])
         @warn(
-            "Please specify 1 or more of the conda artifacts to cleanup " *
-            "(e.g., `packages=true`)"
+            "Please specify 1 or more of the conda artifacts to clean up (e.g., `packages=true`)."
         )
     end
 
