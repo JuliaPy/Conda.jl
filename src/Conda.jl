@@ -228,8 +228,7 @@ end
     export_list(filepath, env=$ROOTENV)
     export_list(io, env=$ROOTENV)
 
-List all packages and write them to an export file for use the Conda.create
-NOTE: Because export is a reserved word we use the term freeze from python
+List all packages and write them to an export file for use the Conda.import_list
 """
 function export_list(filepath::AbstractString, env::Environment=ROOTENV)
     _install_conda(env)
@@ -337,12 +336,12 @@ function clean(;
 end
 
 """"
-    create(filename, env=$ROOTENV, channels=String[])
-    create(io, env=$ROOTENV, channels=String[])
+    import_list(filename, env=$ROOTENV, channels=String[])
+    import_list(io, env=$ROOTENV, channels=String[])
 
-Create a new environment with various channels and a packages file.
+Create a new environment with various channels and a packages list file.
 """
-function create(
+function import_list(
     filepath::AbstractString,
     env::Environment=ROOTENV;
     channels=String[]
@@ -354,11 +353,11 @@ function create(
     ))
 end
 
-function create(io::IO, args...; kwargs...)
+function import_list(io::IO, args...; kwargs...)
     mktemp() do path, fobj
         write(fobj, read(io))
         close(fobj)
-        create(path, args...; kwargs...)
+        import_list(path, args...; kwargs...)
     end
 end
 

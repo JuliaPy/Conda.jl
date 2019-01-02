@@ -71,7 +71,7 @@ Conda.clean(; debug=true)
 
     # Create a new environment
     rm(Conda.prefix(new_env); force=true, recursive=true)
-    Conda.create(
+    Conda.import_list(
         IOBuffer(read("conda-pkg.txt")), new_env; channels=["defaults", "conda-forge"]
     )
 
