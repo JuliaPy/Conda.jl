@@ -289,4 +289,33 @@ function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
     runconda(`config --remove channels $channel --force`, env)
 end
 
+"""
+    clean(;
+        debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+    )
+
+Runs `conda clean -y` with the specified flags.
+"""
+function clean(;
+    debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+)
+    kwargs = [debug, index, locks, tarballs, packages, sources]
+    if !any(kwargs[2:end])
+        @warn(
+            "Please specify 1 or more of the conda artifacts to clean up (e.g., `packages=true`)."
+        )
+    end
+
+    flags = [
+        "--debug",
+        "--index-cache",
+        "--lock",
+        "--tarballs",
+        "--packages",
+        "--source-cache",
+    ]
+    cmd = Cmd([conda, "clean", "--yes", flags[kwargs]...])
+    run(_set_conda_env(cmd))
+end
+
 end
