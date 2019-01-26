@@ -49,6 +49,9 @@ Conda.add_channel("foo", env)
 Conda.rm_channel("foo", env)
 @test Conda.channels(env) == ["defaults"]
 
+# Add a package from a specific channel
+Conda.add("requests", env; channel="conda-forge")
+
 @testset "Batch install and uninstall" begin
     Conda.add(["affine", "ansi2html"], env)
     installed = Conda._installed_packages(env)
