@@ -46,6 +46,11 @@ Conda.add_channel("foo", env)
 # Testing that calling the function twice do not fail
 Conda.add_channel("foo", env)
 
+@test occursin("foo", read(Conda.conda_rc(env), String))
+homerc = joinpath(homedir(), ".condarc")
+
+@test !isfile(homerc) || !occursin("foo", read(homerc, String))
+
 Conda.rm_channel("foo", env)
 @test Conda.channels(env) == ["defaults"]
 

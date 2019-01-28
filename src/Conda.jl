@@ -288,7 +288,7 @@ end
 
 "Get the list of channels used to search packages"
 function channels(env::Environment=ROOTENV)
-    ret=parseconda(`config --get channels`, env)
+    ret=parseconda(`config --get channels --file $(conda_rc(env))`, env)
     if haskey(ret["get"], "channels")
         return collect(String, ret["get"]["channels"])
     else
@@ -298,12 +298,12 @@ end
 
 "Add a channel to the list of channels"
 function add_channel(channel::AbstractString, env::Environment=ROOTENV)
-    runconda(`config --add channels $channel --force`, env)
+    runconda(`config --add channels $channel --file $(conda_rc(env)) --force`, env)
 end
 
 "Remove a channel from the list of channels"
 function rm_channel(channel::AbstractString, env::Environment=ROOTENV)
-    runconda(`config --remove channels $channel --force`, env)
+    runconda(`config --remove channels $channel --file $(conda_rc(env)) --force`, env)
 end
 
 """
