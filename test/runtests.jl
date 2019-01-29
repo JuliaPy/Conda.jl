@@ -41,12 +41,22 @@ pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
 pyversion = read(`$pythonpath -c "import sys; print(sys.version)"`, String)
 @test pyversion[1:1] == Conda.MINICONDA_VERSION
 
+condarc_path = joinpath(homedir(), ".condarc")
+last_modified = mtime(condarc_path)
+
 Conda.add_channel("foo", env)
 @test Conda.channels(env) == ["foo", "defaults"]
+
 # Testing that calling the function twice do not fail
 Conda.add_channel("foo", env)
 
+# Validate that only the Conda.jl RC file was modified
+@test occursin("foo", read(Conda.conda_rc(env), String))
+@test !isfile(condarc_path) || !occursin("foo", read(condarc_path, String))
+
 Conda.rm_channel("foo", env)
+@test mtime(condarc_path) == last_modified
+
 @test Conda.channels(env) == ["defaults"]
 
 @testset "Batch install and uninstall" begin
