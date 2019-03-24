@@ -14,9 +14,11 @@ environment, which only includes `conda` and its dependencies.
 
 ## Basic functionality
 
-You can install this package by running `Pkg.add("Conda")` at the Julia prompt.
+At the `julia>` prompt,
+type a `]` (close square bracket) to get a [Julia package prompt `pkg>`](https://docs.julialang.org/en/v1/stdlib/Pkg/),
+where you can type `add Conda` to install this package.
 
-Basic package managing utilities are provided in the Conda module:
+Once Conda is installed, you can run `import Conda` to load the package and run a variety of package-management functions:
 
 - `Conda.add(package, env)`: install a package;
 - `Conda.rm(package, env)`: remove (uninstall) a package;
