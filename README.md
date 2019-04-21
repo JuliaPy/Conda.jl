@@ -20,7 +20,7 @@ where you can type `add Conda` to install this package.
 
 Once Conda is installed, you can run `import Conda` to load the package and run a variety of package-management functions:
 
-- `Conda.add(package, env)`: install a package;
+- `Conda.add(package, env; channel="")`: install a package from a specified channel (optional);
 - `Conda.rm(package, env)`: remove (uninstall) a package;
 - `Conda.update(env)`: update all installed packages to the latest version;
 - `Conda.list(env)`: list all installed packages.
@@ -50,6 +50,7 @@ For example:
 using Conda
 Conda.add("libnetcdf", :my_env)
 Conda.add("libnetcdf", "/path/to/directory")
+Conda.add("libnetcdf", "/path/to/directory"; channel="anaconda")
 ```
 
 (NOTE: If you are installing Python packages for use with
