@@ -1,9 +1,6 @@
-using Conda, Compat, VersionParsing
-using Compat
-using Compat: @info
-using Compat.Test
+using Conda, VersionParsing, Test
 
-exe = Compat.Sys.iswindows() ? ".exe" : ""
+exe = Sys.iswindows() ? ".exe" : ""
 
 Conda.update()
 
