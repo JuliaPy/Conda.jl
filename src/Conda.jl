@@ -16,7 +16,7 @@ The main functions in Conda are:
 ```
 """
 module Conda
-using Compat, JSON, VersionParsing
+using JSON, VersionParsing
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
@@ -49,30 +49,30 @@ const PREFIX = prefix(ROOTENV)
 
 "Prefix for the executable files installed with the packages"
 function bin_dir(env::Environment)
-    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
+    return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
 end
 const BINDIR = bin_dir(ROOTENV)
 
 "Prefix for the shared libraries installed with the packages"
 function lib_dir(env::Environment)
-    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
+    return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "lib")
 end
 const LIBDIR = lib_dir(ROOTENV)
 
 "Prefix for the python scripts. On UNIX, this is the same than Conda.BINDIR"
 function script_dir(env::Environment)
-    return Compat.Sys.iswindows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
+    return Sys.iswindows() ? joinpath(prefix(env), "Scripts") : bin_dir(env)
 end
 const SCRIPTDIR = script_dir(ROOTENV)
 
 "Prefix where the `python` command lives"
 function python_dir(env::Environment)
-    return Compat.Sys.iswindows() ? prefix(env) : bin_dir(env)
+    return Sys.iswindows() ? prefix(env) : bin_dir(env)
 end
 const PYTHONDIR = python_dir(ROOTENV)
 
 # note: the same conda program is used for all environments
-const conda = if Compat.Sys.iswindows()
+const conda = if Sys.iswindows()
     p = script_dir(ROOTENV)
     conda_bat = joinpath(p, "conda.bat")
     isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
@@ -109,7 +109,7 @@ end
 "Run conda command with environment variables set."
 function runconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
-    Compat.@info("Running $(`conda $args`) in $(env==ROOTENV ? "root" : env) environment")
+    @info("Running $(`conda $args`) in $(env==ROOTENV ? "root" : env) environment")
     run(_set_conda_env(`$conda $args`, env))
     return nothing
 end
@@ -123,11 +123,11 @@ end
 "Get the miniconda installer URL."
 function _installer_url()
     res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
-    if Compat.Sys.isapple()
+    if Sys.isapple()
         res *= "MacOSX"
-    elseif Compat.Sys.islinux()
+    elseif Sys.islinux()
         res *= "Linux"
-    elseif Compat.Sys.iswindows()
+    elseif Sys.iswindows()
         if MINICONDA_VERSION == "3"
             # Quick fix for:
             # * https://github.com/JuliaLang/IJulia.jl/issues/739
@@ -140,7 +140,7 @@ function _installer_url()
         error("Unsuported OS.")
     end
     res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
-    res *= Compat.Sys.iswindows() ? ".exe" : ".sh"
+    res *= Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
 
@@ -150,21 +150,21 @@ _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
-        Compat.@info("Downloading miniconda installer ...")
-        if Compat.Sys.isunix()
+        @info("Downloading miniconda installer ...")
+        if Sys.isunix()
             installer = joinpath(PREFIX, "installer.sh")
         end
-        if Compat.Sys.iswindows()
+        if Sys.iswindows()
             installer = joinpath(PREFIX, "installer.exe")
         end
         download(_installer_url(), installer)
 
-        Compat.@info("Installing miniconda ...")
-        if Compat.Sys.isunix()
+        @info("Installing miniconda ...")
+        if Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
             run(`$installer -b -f -p $PREFIX`)
         end
-        if Compat.Sys.iswindows()
+        if Sys.iswindows()
             run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
         Conda.add_channel("defaults")
