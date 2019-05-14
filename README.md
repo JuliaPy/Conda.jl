@@ -64,8 +64,9 @@ Conda.jl can be used as a `Provider` for
 [CondaBinDeps](https://github.com/JuliaPackaging/CondaBinDeps.jl)
 package.
 
-## Using a pre-existing Conda installation
-To use a pre-existing Conda installation, first create an environment for
+## Manually specifying Conda directory
+
+To manually specify the conda directory, for example, to use a pre-existing Conda installation, first create an environment for
 `Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
 path of the environment.
 You have to rebuild `Conda.jl` and many of the packages that use it after this.
@@ -97,6 +98,10 @@ Conda has been tested on Linux, OS X, and Windows.
 
 Please report any bug or suggestion as an
 [github issue](https://github.com/JuliaPy/Conda.jl/issues)
+
+### Known issues
+
+- Conda does not support paths with non-ASCII characters (e.g. see [conda issue #7023](https://github.com/conda/conda/issues/7023)). If you are experiencing issues(e.g. your home directory contains non-ASCII characters), then try [manually specifying the Conda directory](#manually-specifying-conda-directory).
 
 ## License
 
