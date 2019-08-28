@@ -68,14 +68,17 @@ package.
 To use a pre-existing Conda installation, first create an environment for
 `Conda.jl` and then set the `CONDA_JL_HOME` environment variable to the full
 path of the environment.
-You have to rebuild `Conda.jl` and many of the packages that use it after this.
-So as to install their dependancies to the specified enviroment.
+(You have to rebuild `Conda.jl` and many of the packages that use it after this.)
+In Julia, run:
 
-```shell
-conda create -n conda_jl python conda
-export CONDA_JL_HOME="/path/to/miniconda/envs/conda_jl"
-julia -e 'Pkg.build("Conda")'
+```jl
+julia> run(`conda create -n conda_jl python conda`)
+
+julia> ENV["CONDA_JL_HOME"] = "/path/to/miniconda/envs/conda_jl"  # change this to your path
+
+pkg> build Conda
 ```
+
 ## Using Python 2
 By default, the Conda.jl package [installs Python 3]((https://conda.io/docs/py2or3.htm)),
 and this version of Python is used for all Python dependencies.  If you want to
