@@ -157,6 +157,7 @@ function _install_conda(env::Environment, force::Bool=false)
         if Sys.iswindows()
             installer = joinpath(PREFIX, "installer.exe")
         end
+        mkpath(PREFIX)
         download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
