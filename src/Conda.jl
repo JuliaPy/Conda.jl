@@ -145,7 +145,7 @@ function _installer_url()
     elseif Sys.ARCH == :ppc64le
         res *= "-ppc64le"
     else
-        error("Unsupported architecture: $Sys.ARCH")
+        error("Unsupported architecture: $(Sys.ARCH)")
     end
 
     res *= Sys.iswindows() ? ".exe" : ".sh"
