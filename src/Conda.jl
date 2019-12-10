@@ -139,7 +139,15 @@ function _installer_url()
     else
         error("Unsuported OS.")
     end
-    res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
+
+    if Sys.ARCH == :x86 || Sys.ARCH == :x86_64
+        res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
+    elseif Sys.ARCH == :ppc64le
+        res *= "-ppc64le"
+    else
+        error("Unsupported architecture: $Sys.ARCH")
+    end
+
     res *= Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
