@@ -140,10 +140,8 @@ function _installer_url()
         error("Unsuported OS.")
     end
 
-    if Sys.ARCH == :x86 || Sys.ARCH == :x86_64
-        res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
-    elseif Sys.ARCH == :ppc64le
-        res *= "-ppc64le"
+    if Sys.ARCH in (:x86, :x86_64, :ppc64le)
+        res *= string('-',Sys.ARCH)
     else
         error("Unsupported architecture: $(Sys.ARCH)")
     end
