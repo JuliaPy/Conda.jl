@@ -140,8 +140,11 @@ function _installer_url()
         error("Unsuported OS.")
     end
 
-    if Sys.ARCH in (:x86, :x86_64, :ppc64le)
-        res *= string('-',Sys.ARCH)
+    # mapping of Julia architecture names to Conda architecture names, where they differ
+    arch2conda = Dict(:i686 => :x86)
+    
+    if Sys.ARCH in (:i686, :x86_64, :ppc64le)
+        res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
     else
         error("Unsupported architecture: $(Sys.ARCH)")
     end
