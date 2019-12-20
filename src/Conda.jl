@@ -313,13 +313,13 @@ end
 
 """
     clean(;
-        debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+        debug=false, index=true, locks=false, tarballs=true, packages=true, sources=true
     )
 
 Runs `conda clean -y` with the specified flags.
 """
 function clean(;
-    debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+    debug=false, index=true, locks=false, tarballs=true, packages=true, sources=true
 )
     kwargs = [debug, index, locks, tarballs, packages, sources]
     if !any(kwargs[2:end])
@@ -327,10 +327,14 @@ function clean(;
             "Please specify 1 or more of the conda artifacts to clean up (e.g., `packages=true`)."
         )
     end
+    if locks
+        @warn "clean --lock is no longer supported in Anaconda 4.8.0"
+    end
 
     flags = [
         "--debug",
         "--index-cache",
+        "--lock",
         "--tarballs",
         "--packages",
         "--source-cache",
