@@ -1,10 +1,7 @@
-using Compat
-
 const condadir = abspath(first(DEPOT_PATH), "conda")
 const condadeps = joinpath(condadir, "deps.jl")
 
 module DefaultDeps
-    using Compat
     if isfile("deps.jl")
         include("deps.jl")
     elseif isfile(Main.condadeps)
