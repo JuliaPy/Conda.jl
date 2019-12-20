@@ -103,6 +103,9 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var["PYTHONIOENCODING"]="UTF-8"
     env_var["CONDARC"] = conda_rc(env)
     env_var["CONDA_PREFIX"] = prefix(env)
+    if Sys.iswindows()
+        env_var["PATH"] = bin_dir(env) * ';' * get(env_var, "PATH", "")
+    end
     setenv(cmd, env_var)
 end
 
@@ -310,19 +313,22 @@ end
 
 """
     clean(;
-        debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+        debug=false, index=true, locks=false, tarballs=true, packages=true, sources=true
     )
 
 Runs `conda clean -y` with the specified flags.
 """
 function clean(;
-    debug=false, index=true, locks=true, tarballs=true, packages=true, sources=true
+    debug=false, index=true, locks=false, tarballs=true, packages=true, sources=true
 )
     kwargs = [debug, index, locks, tarballs, packages, sources]
     if !any(kwargs[2:end])
         @warn(
             "Please specify 1 or more of the conda artifacts to clean up (e.g., `packages=true`)."
         )
+    end
+    if locks
+        @warn "clean --lock is no longer supported in Anaconda 4.8.0"
     end
 
     flags = [
