@@ -142,7 +142,16 @@ function _installer_url()
     else
         error("Unsuported OS.")
     end
-    res *= Sys.WORD_SIZE == 64 ? "-x86_64" : "-x86"
+
+    # mapping of Julia architecture names to Conda architecture names, where they differ
+    arch2conda = Dict(:i686 => :x86)
+    
+    if Sys.ARCH in (:i686, :x86_64, :ppc64le)
+        res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
+    else
+        error("Unsupported architecture: $(Sys.ARCH)")
+    end
+
     res *= Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
