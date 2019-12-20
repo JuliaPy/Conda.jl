@@ -103,6 +103,9 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     env_var["PYTHONIOENCODING"]="UTF-8"
     env_var["CONDARC"] = conda_rc(env)
     env_var["CONDA_PREFIX"] = prefix(env)
+    if Sys.iswindows()
+        env_var["PATH"] = bin_dir(env) * ';' * get(env_var, "PATH", ""))
+    end
     setenv(cmd, env_var)
 end
 
