@@ -8,6 +8,7 @@ env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
 
 @test Conda.exists("curl", env)
+@test Conda.exists("curl", "test_conda_jl")
 Conda.add("curl", env)
 
 @testset "Install Python package" begin

@@ -291,7 +291,7 @@ function exists(package::AbstractString, env::Environment=ROOTENV)
       pkg,ver=split(package,"==")  # Remove version if provided
       return pkg in search(pkg,ver,env)
     else
-      if package in search(package,env)
+      if package in search(package,Symbol(env))
         # Found exactly this package
         return true
       else
