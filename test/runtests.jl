@@ -7,12 +7,12 @@ Conda.update()
 env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
 
-@test Conda.exists("curl", env)
-@test Conda.exists("curl", "test_conda_jl")
+@test Conda.exists("curl", env=env)
+@test Conda.exists("curl", env="test_conda_jl")
 Conda.add("curl", env)
 
 @testset "Install Python package" begin
-    Conda.add("python=3.6", env)  # 3.7 doesn't work on Windows at the moment
+    Conda.add("python=3.6", env=env)  # 3.7 doesn't work on Windows at the moment
     pythonpath = joinpath(Conda.python_dir(env), "python" * exe)
     @test isfile(pythonpath)
 
@@ -24,12 +24,12 @@ end
 
 curlvers = Conda.version("curl",env)
 @test curlvers >= v"5.0"
-@test Conda.exists("curl==$curlvers", env)
+@test Conda.exists("curl==$curlvers", env=env)
 
 curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
 @test isfile(curl_path)
 
-@test "curl" in Conda.search("cu*", env)
+@test "curl" in Conda.search("cu*", env=env)
 
 Conda.rm("curl", env)
 @test !isfile(curl_path)
@@ -58,10 +58,10 @@ Conda.rm_channel("foo", env)
 @test Conda.channels(env) == ["defaults"]
 
 # Add a package from a specific channel
-Conda.add("requests", env; channel="conda-forge")
+Conda.add("requests"; env=env, channel="conda-forge")
 
 @testset "Batch install and uninstall" begin
-    Conda.add(["affine", "ansi2html"], env)
+    Conda.add(["affine", "ansi2html"], env=env)
     installed = Conda._installed_packages(env)
     @test "affine" ∈ installed
     @test "ansi2html" ∈ installed

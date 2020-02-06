@@ -192,7 +192,11 @@ end
 const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
 
 "Install a new package or packages."
-function add(pkg::PkgOrPkgs, env::Environment=ROOTENV; channel::AbstractString="")
+function add(pkg::PkgOrPkgs; env::Environment=ROOTENV, channel::AbstractString="")
+    add(pkg,env,channel)
+end
+
+function add(pkg::PkgOrPkgs, env::Environment, channel::AbstractString="")
     c = isempty(channel) ? `` : `-c $channel`
     runconda(`install $(_quiet()) -y $c $pkg`, env)
 end
@@ -266,12 +270,12 @@ function version(name::AbstractString, env::Environment=ROOTENV)
 end
 
 "Search packages for a string"
-function search(package::AbstractString, env::Environment=ROOTENV)
+function search(package::AbstractString; env::Environment=ROOTENV)
     return collect(keys(parseconda(`search $package`, env)))
 end
 
 "Search a specific version of a package"
-function search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}, env::Environment=ROOTENV)
+function search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}; env::Environment=ROOTENV)
     ret=parseconda(`search $package`, env)
     out = String[]
     ver = string(_ver)
@@ -286,12 +290,12 @@ function search(package::AbstractString, _ver::Union{AbstractString,VersionNumbe
 end
 
 "Check if a given package exists."
-function exists(package::AbstractString, env::Environment=ROOTENV)
+function exists(package::AbstractString; env::Environment=ROOTENV)
     if occursin("==", package)
       pkg,ver=split(package,"==")  # Remove version if provided
-      return pkg in search(pkg,ver,env)
+      return pkg in search(pkg,ver,env=env)
     else
-      if package in search(package,Symbol(env))
+      if package in search(package,env=Symbol(env))
         # Found exactly this package
         return true
       else
