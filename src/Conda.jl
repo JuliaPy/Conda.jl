@@ -90,23 +90,28 @@ Use a cleaned up environment for the command `cmd`.
 Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
 function _set_conda_env(cmd, env::Environment=ROOTENV)
-    env_var = copy(ENV)
+    old_env = something(cmd.env, ENV)
+    @static if Sys.iswindows() && VERSION < v"1.2"
+        new_env = Dict(uppercase(k)=>v for (k,v) in old_env) # julia#29334
+    else
+        new_env = copy(old_env)
+    end
     to_remove = String[]
-    for var in keys(env_var)
+    for var in keys(new_env)
         if startswith(var, "CONDA") || startswith(var, "PYTHON")
             push!(to_remove, var)
         end
     end
     for var in to_remove
-        pop!(env_var, var)
+        pop!(new_env, var)
     end
-    env_var["PYTHONIOENCODING"]="UTF-8"
-    env_var["CONDARC"] = conda_rc(env)
-    env_var["CONDA_PREFIX"] = prefix(env)
+    new_env["PYTHONIOENCODING"]="UTF-8"
+    new_env["CONDARC"] = conda_rc(env)
+    new_env["CONDA_PREFIX"] = prefix(env)
     if Sys.iswindows()
-        env_var["PATH"] = bin_dir(env) * ';' * get(env_var, "PATH", "")
+        new_env["PATH"] = bin_dir(env) * ';' * get(new_env, "PATH", "")
     end
-    setenv(cmd, env_var)
+    setenv(cmd, new_env)
 end
 
 "Run conda command with environment variables set."
@@ -145,7 +150,7 @@ function _installer_url()
 
     # mapping of Julia architecture names to Conda architecture names, where they differ
     arch2conda = Dict(:i686 => :x86)
-    
+
     if Sys.ARCH in (:i686, :x86_64, :ppc64le)
         res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
     else
