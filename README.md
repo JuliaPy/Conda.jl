@@ -20,13 +20,13 @@ where you can type `add Conda` to install this package.
 
 Once Conda is installed, you can run `import Conda` to load the package and run a variety of package-management functions:
 
-- `Conda.add(package, env; channel="")`: install a package from a specified channel (optional);
-- `Conda.rm(package, env)`: remove (uninstall) a package;
-- `Conda.update(env)`: update all installed packages to the latest version;
-- `Conda.list(env)`: list all installed packages.
-- `Conda.add_channel(channel, env)`: add a channel to the list of channels;
-- `Conda.channels(env)`: get the current list of channels;
-- `Conda.rm_channel(channel, env)`: remove a channel from the list of channels;
+- `Conda.add(package; env=ROOTENV, channel="")`: install a package from a specified channel (optional);
+- `Conda.rm(package, env=ROOTENV)`: remove (uninstall) a package;
+- `Conda.update(env=ROOTENV)`: update all installed packages to the latest version;
+- `Conda.list(env=ROOTENV)`: list all installed packages.
+- `Conda.add_channel(channel, env=ROOTENV)`: add a channel to the list of channels;
+- `Conda.channels(env=ROOTENV)`: get the current list of channels;
+- `Conda.rm_channel(channel, env=ROOTENV)`: remove a channel from the list of channels;
 
 The parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
