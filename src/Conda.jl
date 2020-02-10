@@ -193,14 +193,11 @@ const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
 
 "Install a new package or packages."
 function add(pkg::PkgOrPkgs; env::Environment=ROOTENV, channel::AbstractString="")
-    add(pkg,env,channel)
-end
-
-function add(pkg::PkgOrPkgs, env::Environment, channel::AbstractString="")
     c = isempty(channel) ? `` : `-c $channel`
     runconda(`install $(_quiet()) -y $c $pkg`, env)
 end
 
+@deprecate add(pkg::PkgOrPkgs, env::Environment; channel::AbstractString="") add(pkg, env=env, channel=channel)
 "Uninstall a package or packages."
 function rm(pkg::PkgOrPkgs, env::Environment=ROOTENV)
     runconda(`remove $(_quiet()) -y $pkg`, env)
@@ -269,6 +266,9 @@ function version(name::AbstractString, env::Environment=ROOTENV)
     error("Could not find the $name package")
 end
 
+@deprecate search(package::AbstractString, env::Environment) search(package,env=env)
+@deprecate search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}, env::Environment) search(package, _ver; env=env)
+
 "Search packages for a string"
 function search(package::AbstractString; env::Environment=ROOTENV)
     return collect(keys(parseconda(`search $package`, env)))
@@ -288,6 +288,8 @@ function search(package::AbstractString, _ver::Union{AbstractString,VersionNumbe
     end
     out
 end
+
+@deprecate exists(package::AbstractString, env::Environment) exists(package, env=env)
 
 "Check if a given package exists."
 function exists(package::AbstractString; env::Environment=ROOTENV)

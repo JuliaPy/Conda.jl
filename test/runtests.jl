@@ -9,7 +9,7 @@ rm(Conda.prefix(env); force=true, recursive=true)
 
 @test Conda.exists("curl", env=env)
 @test Conda.exists("curl", env="test_conda_jl")
-Conda.add("curl", env)
+Conda.add("curl"; env=env)
 
 @testset "Install Python package" begin
     Conda.add("python=3.6", env=env)  # 3.7 doesn't work on Windows at the moment
@@ -18,7 +18,7 @@ Conda.add("curl", env)
 
     cmd = Conda._set_conda_env(`$pythonpath -c "import zmq"`, env)
     @test_throws Exception run(cmd)
-    Conda.add("pyzmq", env)
+    Conda.add("pyzmq", env=env)
     run(cmd)
 end
 
@@ -77,7 +77,7 @@ Conda.clean(; debug=true)
 
 @testset "Exporting and creating environments" begin
     new_env = :test_conda_jl_2
-    Conda.add("curl", env)
+    Conda.add("curl", env=env)
     Conda.export_list("conda-pkg.txt", env)
 
     # Create a new environment

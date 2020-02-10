@@ -20,7 +20,7 @@ where you can type `add Conda` to install this package.
 
 Once Conda is installed, you can run `import Conda` to load the package and run a variety of package-management functions:
 
-- `Conda.add(package; env=ROOTENV, channel="")` or `Conda.add(package, env=ROOTENV; channel="")`: install a package from a specified channel (optional);
+- `Conda.add(package; env=ROOTENV, channel="")`: install a package from a specified channel (optional);
 - `Conda.rm(package, env=ROOTENV)`: remove (uninstall) a package;
 - `Conda.update(env=ROOTENV)`: update all installed packages to the latest version;
 - `Conda.list(env=ROOTENV)`: list all installed packages.
