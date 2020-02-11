@@ -129,13 +129,6 @@ function _installer_url()
     elseif Sys.islinux()
         res *= "Linux"
     elseif Sys.iswindows()
-        if MINICONDA_VERSION == "3"
-            # Quick fix for:
-            # * https://github.com/JuliaLang/IJulia.jl/issues/739
-            # * https://github.com/ContinuumIO/anaconda-issues/issues/10082
-            # * https://github.com/conda/conda/issues/7789
-            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-4.5.4-"
-        end
         res *= "Windows"
     else
         error("Unsuported OS.")
@@ -143,7 +136,7 @@ function _installer_url()
 
     # mapping of Julia architecture names to Conda architecture names, where they differ
     arch2conda = Dict(:i686 => :x86)
-    
+
     if Sys.ARCH in (:i686, :x86_64, :ppc64le)
         res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
     else
