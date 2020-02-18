@@ -91,3 +91,30 @@ Conda.clean(; debug=true)
     @test "curl" ∈ installed
     rm("conda-pkg.txt")
 end
+
+@testset "Conda.pip_interop" begin
+    Conda.pip_interop(false, env)
+    @test_throws Exception Conda.check_pip_interop(env)
+    @test !Conda.pip_interop(env)
+
+    Conda.pip_interop(true, env)
+    @test Conda.pip_interop(env)
+    @test Conda.check_pip_interop(env)
+end
+
+@testset "Conda.pip" begin
+    Conda.pip("install", "affine", env)
+    @test "affine" ∈ Conda._installed_packages(env)
+    Conda.pip("uninstall -y", "affine", env)
+    @test "affine" ∉ Conda._installed_packages(env)
+
+    Conda.pip("install", ["affine", "ansi2html"], env)
+    installed = Conda._installed_packages(env)
+    @test "affine" ∈ installed
+    @test "ansi2html" ∈ installed
+
+    Conda.pip("uninstall -y", ["affine", "ansi2html"], env)
+    installed = Conda._installed_packages(env)
+    @test "affine" ∉ installed
+    @test "ansi2html" ∉ installed
+end
