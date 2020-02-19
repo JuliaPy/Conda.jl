@@ -388,7 +388,7 @@ Gets the `pip_interop_enabled` value from the conda config.
 """
 function pip_interop(env::Environment=ROOTENV)
     dict = parseconda(`config --get pip_interop_enabled --file $(conda_rc(env))`, env)["get"]
-    isempty(dict) ? false : dict["pip_interop_enabled"]
+    get(dict, "pip_interop_enabled", false)
 end
 
 function check_pip_interop(env::Environment=ROOTENV)
