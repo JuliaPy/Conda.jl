@@ -398,6 +398,7 @@ function check_pip_interop(env::Environment=ROOTENV)
                               """)
 end
 
+"pip command to use for specified environment"
 function _pip(env::Environment)
     "pip" ∉ _installed_packages(env) && add("pip", env)
     joinpath(bin_dir(env), "pip")
@@ -405,11 +406,10 @@ end
 
 function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
     check_pip_interop(env)
+    # parse the pip command
     _cmd = String[split(cmd, " ")...]
     @info("Running $(`pip $_cmd $pkgs`) in $(env==ROOTENV ? "root" : env) environment")
-    env_var = _get_conda_env(env)
-    
-    run(setenv(`$(_pip(env)) $_cmd $pkgs`, env_var))
+    run(_set_conda_env(`$(_pip(env)) $_cmd $pkgs`, env))
     nothing
 end
 
