@@ -94,6 +94,10 @@ Most users will not need to use Python 2. This is provided primarily for develop
 variable on [TravisCI](https://docs.travis-ci.com/user/environment-variables/) and/or [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
 
 
+## Troubleshooting
+
+In case there is something wrong with Conda configuration, it is possible to clean the installation by deleting the `.julia/conda` directory and rebuilding the Conda installation with `] build PyCall`.
+
 ## Bugs and suggestions
 
 Conda has been tested on Linux, OS X, and Windows.
