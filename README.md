@@ -96,7 +96,7 @@ variable on [TravisCI](https://docs.travis-ci.com/user/environment-variables/) a
 
 ## Troubleshooting
 
-In case there is something wrong with Conda configuration, it is possible to clean the installation by deleting the `.julia/conda` directory and rebuilding the Conda installation with `] build PyCall`.
+In case there is something wrong with Conda configuration, it is possible to clean the installation by deleting the `.julia/conda` directory.
 
 ## Bugs and suggestions
 
