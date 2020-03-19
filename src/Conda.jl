@@ -47,7 +47,8 @@ const PREFIX = prefix(ROOTENV)
 
 "Prefix for the executable files installed with the packages"
 function bin_dir(env::Environment)
-    return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
+    return joinpath(prefix(env), "bin")
+    #return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
 end
 const BINDIR = bin_dir(ROOTENV)
 
