@@ -47,8 +47,7 @@ const PREFIX = prefix(ROOTENV)
 
 "Prefix for the executable files installed with the packages"
 function bin_dir(env::Environment)
-    return joinpath(prefix(env), "bin")
-    #return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
+    return Sys.iswindows() ? joinpath(prefix(env), "Library", "bin") : joinpath(prefix(env), "bin")
 end
 const BINDIR = bin_dir(ROOTENV)
 
@@ -402,7 +401,7 @@ end
 "pip command to use for specified environment"
 function _pip(env::Environment)
     "pip" ∉ _installed_packages(env) && add("pip", env)
-    joinpath(bin_dir(env), "pip")
+    joinpath(python_dir(env), "pip")
 end
 
 function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
