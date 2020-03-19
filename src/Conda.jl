@@ -401,7 +401,8 @@ end
 "pip command to use for specified environment"
 function _pip(env::Environment)
     "pip" ∉ _installed_packages(env) && add("pip", env)
-    joinpath(python_dir(env), "pip")
+    pipstr = Sys.iswindows() ? "pip.exe" : "pip"
+    joinpath(script_dir(env), pipstr)
 end
 
 function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
