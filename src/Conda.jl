@@ -398,11 +398,12 @@ function check_pip_interop(env::Environment=ROOTENV)
                               """)
 end
 
+_pip() = Sys.iswindows() ? "pip.exe" : "pip"
+
 "pip command to use for specified environment"
 function _pip(env::Environment)
     "pip" ∉ _installed_packages(env) && add("pip", env)
-    pipstr = Sys.iswindows() ? "pip.exe" : "pip"
-    joinpath(script_dir(env), pipstr)
+    joinpath(script_dir(env), _pip())
 end
 
 function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
