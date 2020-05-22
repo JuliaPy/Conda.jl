@@ -119,18 +119,20 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            Pkg.build("Conda")
-            @test read(depsfile, String) == """
-                const ROOTENV = "$(joinpath(condadir, "3"))"
-                const MINICONDA_VERSION = "3"
-                """
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(joinpath(condadir, "3"))"
+                    const MINICONDA_VERSION = "3"
+                    """
+            end
         end
     end
 
     @testset "custom home" begin
         preserve_build() do
             mktempdir() do dir
-                withenv("CONDA_JL_HOME" => dir) do
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir) do
                     Pkg.build("Conda")
                     @test read(depsfile, String) == """
                         const ROOTENV = "$dir"
@@ -148,14 +150,17 @@ end
                 const ROOTENV = "$(joinpath(condadir, "3"))"
                 const MINICONDA_VERSION = "2"
                 """)
-            Pkg.build("Conda")
-            @test read(depsfile, String) == """
-                const ROOTENV = "$(joinpath(condadir, "2"))"
-                const MINICONDA_VERSION = "2"
-                """
+
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(joinpath(condadir, "2"))"
+                    const MINICONDA_VERSION = "2"
+                    """
+            end
 
             # ROOTENV should be replaced since CONDA_JL_HOME wasn't explicitly set
-            withenv("CONDA_JL_VERSION" => "3") do
+            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(joinpath(condadir, "3"))"
