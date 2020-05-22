@@ -17,11 +17,13 @@ end
 
 MINICONDA_VERSION = get(ENV, "CONDA_JL_VERSION", DefaultDeps.MINICONDA_VERSION)
 ROOTENV = get(ENV, "CONDA_JL_HOME") do
+    root = DefaultDeps.ROOTENV
+
     # Ensure the ROOTENV uses the current MINICONDA_VERSION when not using a custom ROOTENV
-    if abspath(dirname(DefaultDeps.ROOTENV)) == condadir
+    if normpath(dirname(root)) == normpath(condadir) && all(isdigit, basename(root)) && basename(root) != MINICONDA_VERSION
         joinpath(condadir, MINICONDA_VERSION)
     else
-        DefaultDeps.ROOTENV
+        root
     end
 end
 
