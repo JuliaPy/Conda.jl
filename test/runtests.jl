@@ -147,7 +147,7 @@ end
         preserve_build() do
             # Mismatch in written file
             write(depsfile, """
-                const ROOTENV = "$(joinpath(condadir, "3"))"
+                const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                 const MINICONDA_VERSION = "2"
                 """)
 
