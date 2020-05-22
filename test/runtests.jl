@@ -122,7 +122,7 @@ end
             withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(joinpath(condadir, "3"))"
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     """
             end
@@ -135,7 +135,7 @@ end
                 withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir) do
                     Pkg.build("Conda")
                     @test read(depsfile, String) == """
-                        const ROOTENV = "$dir"
+                        const ROOTENV = "$(escape_string(dir))"
                         const MINICONDA_VERSION = "3"
                         """
                 end
@@ -154,7 +154,7 @@ end
             withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(joinpath(condadir, "2"))"
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "2")))"
                     const MINICONDA_VERSION = "2"
                     """
             end
@@ -163,7 +163,7 @@ end
             withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(joinpath(condadir, "3"))"
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     """
             end
