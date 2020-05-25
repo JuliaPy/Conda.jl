@@ -15,8 +15,17 @@ module DefaultDeps
     end
 end
 
-ROOTENV = get(ENV, "CONDA_JL_HOME", DefaultDeps.ROOTENV)
 MINICONDA_VERSION = get(ENV, "CONDA_JL_VERSION", DefaultDeps.MINICONDA_VERSION)
+ROOTENV = get(ENV, "CONDA_JL_HOME") do
+    root = DefaultDeps.ROOTENV
+
+    # Ensure the ROOTENV uses the current MINICONDA_VERSION when not using a custom ROOTENV
+    if normpath(dirname(root)) == normpath(condadir) && all(isdigit, basename(root))
+        joinpath(condadir, MINICONDA_VERSION)
+    else
+        root
+    end
+end
 
 if isdir(ROOTENV) && MINICONDA_VERSION != DefaultDeps.MINICONDA_VERSION
     error("""Miniconda version changed, since last build.

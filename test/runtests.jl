@@ -1,4 +1,4 @@
-using Conda, VersionParsing, Test
+using Conda, Pkg, Test, VersionParsing
 
 exe = Sys.iswindows() ? ".exe" : ""
 
@@ -90,4 +90,83 @@ Conda.clean(; debug=true)
     installed = Conda._installed_packages(new_env)
     @test "curl" ∈ installed
     rm("conda-pkg.txt")
+end
+
+@testset "build" begin
+    condadir = abspath(first(DEPOT_PATH), "conda")
+    depsfile = joinpath(@__DIR__, "..", "deps", "deps.jl")
+
+    function preserve_build(body)
+        condadir_bak = condadir * "-backup"
+        depsfile_bak = depsfile * "-backup"
+
+        # Backup contents that may be changed by a build.
+        ispath(condadir) && mv(condadir, condadir_bak)
+        ispath(depsfile) && mv(depsfile, depsfile_bak)
+
+        try
+            body()
+        finally
+            # Restore content
+            ispath(condadir_bak) && mv(condadir_bak, condadir; force=true)
+            ispath(depsfile_bak) && mv(depsfile_bak, depsfile; force=true)
+        end
+    end
+
+    @testset "defaults" begin
+        preserve_build() do
+            # In order to test the defaults no depsfiles must be present
+            @test !isfile(depsfile)
+            @test !isfile(joinpath(condadir, "deps.jl"))
+
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const MINICONDA_VERSION = "3"
+                    """
+            end
+        end
+    end
+
+    @testset "custom home" begin
+        preserve_build() do
+            mktempdir() do dir
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir) do
+                    Pkg.build("Conda")
+                    @test read(depsfile, String) == """
+                        const ROOTENV = "$(escape_string(dir))"
+                        const MINICONDA_VERSION = "3"
+                        """
+                end
+            end
+        end
+    end
+
+    @testset "version mismatch" begin
+        preserve_build() do
+            # Mismatch in written file
+            write(depsfile, """
+                const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                const MINICONDA_VERSION = "2"
+                """)
+
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "2")))"
+                    const MINICONDA_VERSION = "2"
+                    """
+            end
+
+            # ROOTENV should be replaced since CONDA_JL_HOME wasn't explicitly set
+            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing) do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const MINICONDA_VERSION = "3"
+                    """
+            end
+        end
+    end
 end
