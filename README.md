@@ -27,6 +27,9 @@ Once Conda is installed, you can run `import Conda` to load the package and run 
 - `Conda.add_channel(channel, env)`: add a channel to the list of channels;
 - `Conda.channels(env)`: get the current list of channels;
 - `Conda.rm_channel(channel, env)`: remove a channel from the list of channels;
+- **experimental:** read the section **Conda and pip** below before using the following
+    - `Conda.pip_interop(bool, env)`: config environment to interact with `pip`
+    - `Conda.pip(command, package, env)`: run `pip` command on packages in environment
 
 The parameter `env` is optional and defaults to `ROOTENV`. See below for more info.
 
@@ -78,6 +81,24 @@ julia> ENV["CONDA_JL_HOME"] = "/path/to/miniconda/envs/conda_jl"  # change this 
 
 pkg> build Conda
 ```
+
+## Conda and pip
+As of [conda 4.6.0](https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/pip-interoperability.html#improving-interoperability-with-pip) there is improved support for PyPi packages.
+**Conda is still the recommended installation method** however if there are packages that are only availible with `pip` one can do the following:
+
+```jl
+julia> Conda.pip_interop(true, env)
+
+julia> Conda.pip("install", "somepackage")
+
+julia> Conda.pip("install", ["somepackage1", "somepackage2"])
+
+julia> Conda.pip("uninstall", "somepackage")
+
+julia> Conda.pip("uninstall", ["somepackage1", "somepackage2])
+```
+
+If the uninstall command is to be used noninteractively, one can use `"uninstall -y"` to answer yes to the prompts.
 
 ## Using Python 2
 By default, the Conda.jl package [installs Python 3]((https://conda.io/docs/py2or3.htm)),

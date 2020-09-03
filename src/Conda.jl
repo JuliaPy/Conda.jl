@@ -83,11 +83,11 @@ conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
 const CONDARC = conda_rc(ROOTENV)
 
 """
-Use a cleaned up environment for the command `cmd`.
+Get a cleaned up environment
 
 Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
-function _set_conda_env(cmd, env::Environment=ROOTENV)
+function _get_conda_env(env::Environment=ROOTENV)
     env_var = copy(ENV)
     to_remove = String[]
     for var in keys(env_var)
@@ -104,8 +104,10 @@ function _set_conda_env(cmd, env::Environment=ROOTENV)
     if Sys.iswindows()
         env_var["PATH"] = bin_dir(env) * ';' * get(env_var, "PATH", "")
     end
-    setenv(cmd, env_var)
+    env_var
 end
+
+_set_conda_env(cmd, env::Environment=ROOTENV) = setenv(cmd, _get_conda_env(env))
 
 "Run conda command with environment variables set."
 function runconda(args::Cmd, env::Environment=ROOTENV)
@@ -367,6 +369,50 @@ function import_list(io::IO, args...; kwargs...)
         close(fobj)
         import_list(path, args...; kwargs...)
     end
+end
+
+"""
+    pip_interop(bool::Bool, env::Environment=$ROOTENV)
+
+Sets the `pip_interop_enabled` value to bool.
+If `true` then the conda solver is allowed to interact with non-conda-installed python packages.
+"""
+function pip_interop(bool::Bool, env::Environment=ROOTENV)
+    runconda(`config --set pip_interop_enabled $bool --file $(conda_rc(env))`, env)
+end
+
+"""
+    pip_interop(env::Environment=$ROOTENV)
+
+Gets the `pip_interop_enabled` value from the conda config.
+"""
+function pip_interop(env::Environment=ROOTENV)
+    dict = parseconda(`config --get pip_interop_enabled --file $(conda_rc(env))`, env)["get"]
+    get(dict, "pip_interop_enabled", false)
+end
+
+function check_pip_interop(env::Environment=ROOTENV)
+    pip_interop(env) || error("""
+                              pip_interop is not enabled
+                              Use `Conda.pip_interop(true; [env::Environment=ROOTENV])` to enable
+                              """)
+end
+
+_pip() = Sys.iswindows() ? "pip.exe" : "pip"
+
+"pip command to use for specified environment"
+function _pip(env::Environment)
+    "pip" ∉ _installed_packages(env) && add("pip", env)
+    joinpath(script_dir(env), _pip())
+end
+
+function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
+    check_pip_interop(env)
+    # parse the pip command
+    _cmd = String[split(cmd, " ")...]
+    @info("Running $(`pip $_cmd $pkgs`) in $(env==ROOTENV ? "root" : env) environment")
+    run(_set_conda_env(`$(_pip(env)) $_cmd $pkgs`, env))
+    nothing
 end
 
 end
