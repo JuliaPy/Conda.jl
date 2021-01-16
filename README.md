@@ -82,6 +82,16 @@ julia> ENV["CONDA_JL_HOME"] = "/path/to/miniconda/envs/conda_jl"  # change this 
 pkg> build Conda
 ```
 
+## Retrieving Miniconda from an alternative location
+
+If you need to download Miniconda from an alternative location, for example if you are behind a corporate firewall that forbids you internet access but it has conda available in the local network, you can set the `CONDA_JL_BASEURL` variable prior to installing `Conda`. For example:
+
+``` jl
+julia> ENV["CONDA_JL_BASEURL"] = "https://miniconda-mirror.intranet.net/miniconda"
+```
+
+This will retrieve Miniconda installation archive from your intranet location.
+
 ## Conda and pip
 As of [conda 4.6.0](https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/pip-interoperability.html#improving-interoperability-with-pip) there is improved support for PyPi packages.
 **Conda is still the recommended installation method** however if there are packages that are only availible with `pip` one can do the following:
