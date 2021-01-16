@@ -197,3 +197,15 @@ end
         end
     end
 end
+
+# Test that setting CONDA_JL_BASEURL environment variable has effect
+@testset "Conda Base URL" begin
+    withenv("CONDA_JL_BASEURL" => nothing) do
+        @test Conda._miniconda_base_url() == Conda.MINICONDA_DEFAULT_BASE_URL
+    end
+
+    testurl = Conda.MINICONDA_DEFAULT_BASE_URL * "/"
+    withenv("CONDA_JL_BASEURL" => testurl) do
+        @test Conda._miniconda_base_url() == testurl
+    end
+end
