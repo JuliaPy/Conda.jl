@@ -83,7 +83,7 @@ conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
 const CONDARC = conda_rc(ROOTENV)
 
 "Default base URL to download Conda from"
-const MINICONDA_DEFAULT_BASE_URL = "https://repo.continuum.io/miniconda"
+const MINICONDA_DEFAULT_BASEURL = "https://repo.continuum.io/miniconda"
 
 """
 Get a cleaned up environment
@@ -127,7 +127,7 @@ function parseconda(args::Cmd, env::Environment=ROOTENV)
 end
 
 "Retrieve Miniconda base url. This is the directory That would contain Miniconda-$(MINICONDA_VERSION)-latest-[...]"
-_miniconda_base_url() = get(ENV, "CONDA_JL_BASEURL", MINICONDA_DEFAULT_BASE_URL)
+_miniconda_base_url() = get(ENV, "CONDA_JL_BASEURL", MINICONDA_DEFAULT_BASEURL)
 
 "Get the miniconda installer URL."
 function _installer_url()
