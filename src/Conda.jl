@@ -151,14 +151,14 @@ function _installer_url()
                            "MacOSX-x86", "MacOSX-x86_64",
                            "Windows-x86", "Windows-x86_64"]
 
-    if USE_MINIFORGE == "1":
-        if conda_platform not in MINIFORGE_PLATFORMS:
+    if USE_MINIFORGE == "1"
+        if conda_platform not in MINIFORGE_PLATFORMS
             error("Unsupported miniforge platform: $(conda_platform)")
         else
             res = "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-"
         end
-    else:
-        if conda_platform not in MINICONDA_PLATFORMS:
+    else
+        if conda_platform not in MINICONDA_PLATFORMS
             error("Unsupported miniconda platform: $(conda_platform)")
         else
             res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
