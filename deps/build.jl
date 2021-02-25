@@ -13,6 +13,9 @@ module DefaultDeps
     if !isdefined(@__MODULE__, :ROOTENV)
         const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
     end
+    if !isdefined(@__MODULE__, :USE_MINIFORGE)
+        const USE_MINIFORGE = "0"
+    end
 end
 
 MINICONDA_VERSION = get(ENV, "CONDA_JL_VERSION", DefaultDeps.MINICONDA_VERSION)
@@ -26,6 +29,8 @@ ROOTENV = get(ENV, "CONDA_JL_HOME") do
         root
     end
 end
+
+USE_MINIFORGE = get(ENV, "CONDA_JL_USE_MINIFORGE", DefaultDeps.USE_MINIFORGE)
 
 if isdir(ROOTENV) && MINICONDA_VERSION != DefaultDeps.MINICONDA_VERSION
     error("""Miniconda version changed, since last build.
@@ -42,6 +47,7 @@ end
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
+const USE_MINIFORGE = "$(escape_string(USE_MINIFORGE))"
 """
 
 mkpath(condadir)

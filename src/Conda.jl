@@ -125,13 +125,12 @@ end
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
     if Sys.isapple()
-        res *= "MacOSX"
+        conda_os = "MacOSX"
     elseif Sys.islinux()
-        res *= "Linux"
+        conda_os = "Linux"
     elseif Sys.iswindows()
-        res *= "Windows"
+        conda_os = "Windows"
     else
         error("Unsuported OS.")
     end
@@ -139,12 +138,34 @@ function _installer_url()
     # mapping of Julia architecture names to Conda architecture names, where they differ
     arch2conda = Dict(:i686 => :x86, :powerpc64le => :ppc64le)
 
-    if Sys.ARCH in (:i686, :x86_64, :ppc64le, :powerpc64le)
-        res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
-    else
-        error("Unsupported architecture: $(Sys.ARCH)")
+    if Sys.isapple()
+        arch2conda[:aarch64] = :arm64
     end
 
+    conda_platform = string(conda_os, '-', get(arch2conda, Sys.ARCH, Sys.ARCH))
+
+    MINIFORGE_PLATFORMS = ["Linux-aarch64", "Linux-x86_64", "Linux-ppc64le",
+                           "MacOSX-arm64", "MacOSX-x86_64",
+                           "Windows-x86_64"]
+    MINICONDA_PLATFORMS = ["Linux-x86_64", "Linux-x86",
+                           "MacOSX-x86", "MacOSX-x86_64",
+                           "Windows-x86", "Windows-x86_64"]
+
+    if USE_MINIFORGE == "1":
+        if conda_platform not in MINIFORGE_PLATFORMS:
+            error("Unsupported miniforge platform: $(conda_platform)")
+        else
+            res = "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-"
+        end
+    else:
+        if conda_platform not in MINICONDA_PLATFORMS:
+            error("Unsupported miniconda platform: $(conda_platform)")
+        else
+            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
+        end
+    end
+
+    res *= conda_platform
     res *= Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
