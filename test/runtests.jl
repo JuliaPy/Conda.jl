@@ -151,7 +151,7 @@ end
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
-                    const USE_MINIFORGE = "0"
+                    const USE_MINIFORGE = false
                     """
             end
         end
@@ -165,7 +165,7 @@ end
                     @test read(depsfile, String) == """
                         const ROOTENV = "$(escape_string(dir))"
                         const MINICONDA_VERSION = "3"
-                        const USE_MINIFORGE = "0"
+                        const USE_MINIFORGE = false
                         """
                 end
             end
@@ -178,7 +178,7 @@ end
             write(depsfile, """
                 const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                 const MINICONDA_VERSION = "2"
-                const USE_MINIFORGE = "0"
+                const USE_MINIFORGE = false
                 """)
 
             withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
@@ -186,7 +186,7 @@ end
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "2")))"
                     const MINICONDA_VERSION = "2"
-                    const USE_MINIFORGE = "0"
+                    const USE_MINIFORGE = false
                     """
             end
 
@@ -196,7 +196,7 @@ end
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
-                    const USE_MINIFORGE = "0"
+                    const USE_MINIFORGE = false
                     """
             end
         end
