@@ -194,9 +194,6 @@ function _install_conda(env::Environment, force::Bool=false)
         if Sys.iswindows()
             run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
-        Conda.add_channel("defaults")
-        # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
-        runconda(`update $(_quiet()) -y conda`)
     end
     if !isdir(prefix(env))
         runconda(`create $(_quiet()) -y -p $(prefix(env))`)
