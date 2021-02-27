@@ -151,7 +151,7 @@ function _installer_url()
                            "MacOSX-x86", "MacOSX-x86_64",
                            "Windows-x86", "Windows-x86_64"]
 
-    if USE_MINIFORGE == "1"
+    if USE_MINIFORGE
         if !(conda_platform in MINIFORGE_PLATFORMS)
             error("Unsupported miniforge platform: $(conda_platform)")
         else
