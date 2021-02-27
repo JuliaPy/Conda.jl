@@ -4,6 +4,14 @@ exe = Sys.iswindows() ? ".exe" : ""
 
 Conda.update()
 
+if Conda.USE_MINIFORGE
+    default_channel = "defaults"
+    alt_channel = "conda-forge"
+else
+    default_channel = "conda-forge"
+    alt_channel = "defaults"
+endif
+
 env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
 
@@ -42,7 +50,7 @@ condarc_path = joinpath(homedir(), ".condarc")
 last_modified = mtime(condarc_path)
 
 Conda.add_channel("foo", env)
-@test Conda.channels(env) == ["foo", "defaults"]
+@test Conda.channels(env) == ["foo", default_channel]
 
 # Testing that calling the function twice do not fail
 Conda.add_channel("foo", env)
@@ -54,10 +62,10 @@ Conda.add_channel("foo", env)
 Conda.rm_channel("foo", env)
 @test mtime(condarc_path) == last_modified
 
-@test Conda.channels(env) == ["defaults"]
+@test Conda.channels(env) == [default_channel]
 
 # Add a package from a specific channel
-Conda.add("requests", env; channel="conda-forge")
+Conda.add("requests", env; channel=alt_channel)
 
 @testset "Batch install and uninstall" begin
     Conda.add(["affine", "ansi2html"], env)
@@ -82,11 +90,11 @@ Conda.clean(; debug=true)
     # Create a new environment
     rm(Conda.prefix(new_env); force=true, recursive=true)
     Conda.import_list(
-        IOBuffer(read("conda-pkg.txt")), new_env; channels=["defaults", "conda-forge"]
+        IOBuffer(read("conda-pkg.txt")), new_env; channels=[default_channel, alt_channel]
     )
 
     # Ensure that our new environment has our channels and package installed.
-    Conda.channels(new_env) == ["defaults", "conda-forge"]
+    Conda.channels(new_env) == [default_channel, alt_channel]
     installed = Conda._installed_packages(new_env)
     @test "curl" ∈ installed
     rm("conda-pkg.txt")
