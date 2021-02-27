@@ -11,6 +11,7 @@ julia:
 env:
     - CONDA_JL_VERSION="2"
     - CONDA_JL_VERSION="3"
+    - CONDA_JL_VERSION="3" CONDA_JL_USE_MINIFORGE="yes"
 
 notifications:
     email: false
