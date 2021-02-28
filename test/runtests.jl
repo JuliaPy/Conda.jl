@@ -10,7 +10,7 @@ if Conda.USE_MINIFORGE
 else
     default_channel = "conda-forge"
     alt_channel = "defaults"
-endif
+end
 
 env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
