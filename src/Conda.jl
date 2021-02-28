@@ -79,7 +79,20 @@ else
 end
 
 "Path to the condarc file"
-conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
+function conda_rc(env::Environment)
+    #=
+    sys_condarc is looked at by conda for almost operations
+    except when adding channels with --file argument.
+    we copy it to env_condarc avoid this conda bug
+    =#
+    env_condarc = joinpath(prefix(env), "condarc-julia.yml")
+    sys_condarc = joinpath(prefix(ROOTENV), ".condarc")
+    if isdir(prefix(env)) && !isfile(env_condarc) && isfile(sys_condarc)
+        cp(sys_condarc, env_condarc)
+    end
+    return env_condarc
+end
+
 const CONDARC = conda_rc(ROOTENV)
 
 """
@@ -379,6 +392,10 @@ function import_list(
         `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
         env
     ))
+    # persist the channels given for this environment
+    for channel in reverse(channels)
+        add_channel(channel, env)
+    end
 end
 
 function import_list(io::IO, args...; kwargs...)
