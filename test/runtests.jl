@@ -90,7 +90,7 @@ Conda.clean(; debug=true)
     # Create a new environment
     rm(Conda.prefix(new_env); force=true, recursive=true)
     Conda.import_list(
-        IOBuffer(read("conda-pkg.txt")), new_env; channels=["foo", alt_channel]
+        IOBuffer(read("conda-pkg.txt")), new_env; channels=["foo", alt_channel, default_channel]
     )
 
     # Ensure that our new environment has our channels and package installed.
@@ -176,7 +176,7 @@ end
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
-                    const USE_MINIFORGE = true
+                    const USE_MINIFORGE = false
                     """
             end
         end
