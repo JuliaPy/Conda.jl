@@ -165,6 +165,23 @@ end
         end
     end
 
+    @testset "miniforge" begin
+        preserve_build() do
+            # In order to test the defaults no depsfiles must be present
+            @test !isfile(depsfile)
+            @test !isfile(joinpath(condadir, "deps.jl"))
+
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "1") do
+                Pkg.build("Conda")
+                @test read(depsfile, String) == """
+                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const MINICONDA_VERSION = "3"
+                    const USE_MINIFORGE = true
+                    """
+            end
+        end
+    end
+
     @testset "custom home" begin
         preserve_build() do
             mktempdir() do dir
