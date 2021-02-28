@@ -176,7 +176,7 @@ end
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
-                    const USE_MINIFORGE = false
+                    const USE_MINIFORGE = true
                     """
             end
         end
