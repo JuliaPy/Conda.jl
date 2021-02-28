@@ -154,7 +154,7 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
@@ -168,7 +168,7 @@ end
     @testset "custom home" begin
         preserve_build() do
             mktempdir() do dir
-                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir) do
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing) do
                     Pkg.build("Conda")
                     @test read(depsfile, String) == """
                         const ROOTENV = "$(escape_string(dir))"
@@ -189,7 +189,7 @@ end
                 const USE_MINIFORGE = false
                 """)
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing) do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "2")))"
@@ -199,7 +199,7 @@ end
             end
 
             # ROOTENV should be replaced since CONDA_JL_HOME wasn't explicitly set
-            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing) do
+            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
