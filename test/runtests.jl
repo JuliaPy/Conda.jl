@@ -5,11 +5,11 @@ exe = Sys.iswindows() ? ".exe" : ""
 Conda.update()
 
 if Conda.USE_MINIFORGE
-    default_channel = "defaults"
-    alt_channel = "conda-forge"
-else
     default_channel = "conda-forge"
     alt_channel = "defaults"
+else
+    default_channel = "defaults"
+    alt_channel = "conda-forge"
 end
 
 env = :test_conda_jl
