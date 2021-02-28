@@ -65,7 +65,7 @@ Conda.rm_channel("foo", env)
 @test Conda.channels(env) == [default_channel]
 
 # Add a package from a specific channel
-Conda.add("requests", env; channel=alt_channel)
+Conda.add("zlib", env; channel=alt_channel)
 
 @testset "Batch install and uninstall" begin
     Conda.add(["affine", "ansi2html"], env)
