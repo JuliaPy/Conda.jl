@@ -79,7 +79,20 @@ else
 end
 
 "Path to the condarc file"
-conda_rc(env::Environment) = joinpath(prefix(env), "condarc-julia.yml")
+function conda_rc(env::Environment)
+    #=
+    sys_condarc is looked at by conda for almost operations
+    except when adding channels with --file argument.
+    we copy it to env_condarc avoid this conda bug
+    =#
+    env_condarc = joinpath(prefix(env), "condarc-julia.yml")
+    sys_condarc = joinpath(prefix(ROOTENV), ".condarc")
+    if isdir(prefix(env)) && !isfile(env_condarc) && isfile(sys_condarc)
+        cp(sys_condarc, env_condarc)
+    end
+    return env_condarc
+end
+
 const CONDARC = conda_rc(ROOTENV)
 
 """
@@ -125,13 +138,12 @@ end
 
 "Get the miniconda installer URL."
 function _installer_url()
-    res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
     if Sys.isapple()
-        res *= "MacOSX"
+        conda_os = "MacOSX"
     elseif Sys.islinux()
-        res *= "Linux"
+        conda_os = "Linux"
     elseif Sys.iswindows()
-        res *= "Windows"
+        conda_os = "Windows"
     else
         error("Unsuported OS.")
     end
@@ -139,12 +151,34 @@ function _installer_url()
     # mapping of Julia architecture names to Conda architecture names, where they differ
     arch2conda = Dict(:i686 => :x86, :powerpc64le => :ppc64le)
 
-    if Sys.ARCH in (:i686, :x86_64, :ppc64le, :powerpc64le)
-        res *= string('-', get(arch2conda, Sys.ARCH, Sys.ARCH))
-    else
-        error("Unsupported architecture: $(Sys.ARCH)")
+    if Sys.isapple()
+        arch2conda[:aarch64] = :arm64
     end
 
+    conda_platform = string(conda_os, '-', get(arch2conda, Sys.ARCH, Sys.ARCH))
+
+    MINIFORGE_PLATFORMS = ["Linux-aarch64", "Linux-x86_64", "Linux-ppc64le",
+                           "MacOSX-arm64", "MacOSX-x86_64",
+                           "Windows-x86_64"]
+    MINICONDA_PLATFORMS = ["Linux-x86_64", "Linux-x86",
+                           "MacOSX-x86", "MacOSX-x86_64",
+                           "Windows-x86", "Windows-x86_64"]
+
+    if USE_MINIFORGE
+        if !(conda_platform in MINIFORGE_PLATFORMS)
+            error("Unsupported miniforge platform: $(conda_platform)")
+        else
+            res = "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-"
+        end
+    else
+        if !(conda_platform in MINICONDA_PLATFORMS)
+            error("Unsupported miniconda platform: $(conda_platform)")
+        else
+            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
+        end
+    end
+
+    res *= conda_platform
     res *= Sys.iswindows() ? ".exe" : ".sh"
     return res
 end
@@ -173,9 +207,6 @@ function _install_conda(env::Environment, force::Bool=false)
         if Sys.iswindows()
             run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
-        Conda.add_channel("defaults")
-        # Update conda because conda 4.0 is needed and miniconda download installs only 3.9
-        runconda(`update $(_quiet()) -y conda`)
     end
     if !isdir(prefix(env))
         runconda(`create $(_quiet()) -y -p $(prefix(env))`)
@@ -361,6 +392,10 @@ function import_list(
         `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
         env
     ))
+    # persist the channels given for this environment
+    for channel in reverse(channels)
+        add_channel(channel, env)
+    end
 end
 
 function import_list(io::IO, args...; kwargs...)

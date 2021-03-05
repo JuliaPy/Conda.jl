@@ -114,6 +114,24 @@ tell you how to delete your existing Miniconda installation if needed.
 Most users will not need to use Python 2. This is provided primarily for developers wishing to test their packages for both Python 2 and Python, e.g. by setting the `CONDA_JL_VERSION`
 variable on [TravisCI](https://docs.travis-ci.com/user/environment-variables/) and/or [AppVeyor](https://www.appveyor.com/docs/build-configuration/#environment-variables).
 
+## Using Miniforge
+
+Miniforge is a community based conda installer by `conda-forge`, a part of NumFOCUS.
+Using miniforge and conda-forge in general avoids using `repo.anaconda.com`
+maintained by Anaconda, Inc which has terms of conditions that you may want to avoid.
+`conda-forge` packages are hosted on `anaconda.org`, but Anaconda, Inc has been
+providing hosting for free under the terms of `conda-forge` which is `BSD-3-Clause`
+on top of the original license of the software packages. To use miniforge, use
+the `CONDA_JL_USE_MINIFORGE` environment variable.
+
+```jl
+julia> ENV["CONDA_JL_USE_MINIFORGE"] = "1"
+
+pkg> build Conda
+```
+
+Also note that you have to use Miniforge for `aarch64-linux-gnu` and
+`aarch64-apple-darwin` platforms as Miniconda is not available for those platforms yet.
 
 ## Bugs and suggestions
 
