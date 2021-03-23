@@ -145,6 +145,30 @@ pkg> build Conda
 Note that Conda.jl 1.6 and above will use miniforge by default on x86_64, aarch64
 and ppc64le systems.
 
+
+## Troubleshooting
+
+### Installation on Windows with special characters in user names
+
+If you have a special character in your user name (like an umlaut, an accent or a space) the installation which defaults to
+directory `C:\Users\<username>\.julia\Conda\3` will fail on Windows.
+This is a [known issue](https://github.com/conda/conda/issues/10239). The work-around is to install Miniconda to a user-writable directory outside of the home directory.
+If you have an unsuccessful installation of `Conda.jl` and/or related packages like `IJulia` or `PyPlot`, it might be necessary to remove these packages first.
+Before installing `Conda.jl`, choose a directory without space and without special characters and set the environment variable `CONDA_JL_HOME` as follows inside a julia session:
+
+```julia
+ENV["CONDA_JL_HOME"] = "C:\\Conda-julia\\3"
+
+# Install Conda.jl
+using Pkg
+Pkg.add("Conda")
+
+using Conda
+# this should be your chosen Conda home directory
+@show Conda.ROOTENV
+```
+
+
 ## Bugs and suggestions
 
 Conda has been tested on Linux, OS X, and Windows.
