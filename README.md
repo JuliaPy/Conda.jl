@@ -148,24 +148,32 @@ and ppc64le systems.
 
 ## Troubleshooting
 
-### Installation on Windows with special characters in user names
+### Installation with special characters in user names
 
-If you have a special character in your user name (like an umlaut, an accent or a space) the installation which defaults to
-directory `C:\Users\<username>\.julia\Conda\3` will fail on Windows.
+If you have a special character in your user name (like an umlaut or an accent) the installation which defaults to
+directory `C:\Users\<username>\.julia\Conda\3` will fail on Windows. A space in your user name will also fail on any platform.
 This is a [known issue](https://github.com/conda/conda/issues/10239). The work-around is to install Miniconda to a user-writable directory outside of the home directory.
-If you have an unsuccessful installation of `Conda.jl` and/or related packages like `IJulia` or `PyPlot`, it might be necessary to remove these packages first.
 Before installing `Conda.jl`, choose a directory without space and without special characters and set the environment variable `CONDA_JL_HOME` as follows inside a julia session:
 
 ```julia
-ENV["CONDA_JL_HOME"] = "C:\\Conda-julia\\3"
-
-# Install Conda.jl
+ENV["CONDA_JL_HOME"] = raw"C:\Conda-Julia\3"
 using Pkg
-Pkg.add("Conda")
+Pkg.build("Conda")
+```
 
+After restarting Julia, you can verify the new installation directory:
+
+```julia
 using Conda
-# this should be your chosen Conda home directory
 @show Conda.ROOTENV
+```
+
+If you use `IJulia` or `PyCall`, they need to be re-build:
+
+```julia
+using Pkg
+Pkg.build("PyCall")
+Pkg.build("IJulia")
 ```
 
 
