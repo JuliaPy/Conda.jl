@@ -205,7 +205,7 @@ function _install_conda(env::Environment, force::Bool=false)
             run(`$installer -b -f -p $PREFIX`)
         end
         if Sys.iswindows()
-            run(Cmd(`$installer /S /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
+            run(Cmd(`$installer /S --no-shortcuts /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
     end
     if !isdir(prefix(env))
