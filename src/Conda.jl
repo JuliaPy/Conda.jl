@@ -14,7 +14,16 @@ The main functions in Conda are:
 ```
 """
 module Conda
-using JSON, VersionParsing
+
+using JSON
+using VersionParsing
+
+if VERSION >= v"1.6.0-DEV.923"
+    # Use Downloads.jl once Conda.jl drops support for Julia versions < 1.3
+    download(args...) = Base.invokelatest(Base.Downloads().download, args...)
+else
+    using Base: download
+end
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
