@@ -8,7 +8,7 @@ module DefaultDeps
         include(Main.condadeps)
     end
     if !isdefined(@__MODULE__, :MINICONDA_VERSION)
-        const MINICONDA_VERSION = "3"
+        const MINICONDA_VERSION = "3-latest"
     end
     if !isdefined(@__MODULE__, :ROOTENV)
         const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
