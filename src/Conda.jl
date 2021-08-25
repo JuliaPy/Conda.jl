@@ -174,7 +174,7 @@ function _installer_url()
         if !(conda_platform in MINICONDA_PLATFORMS)
             error("Unsupported miniconda platform: $(conda_platform)")
         else
-            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-latest-"
+            res = "https://repo.continuum.io/miniconda/Miniconda$(MINICONDA_VERSION)-"
         end
     end
 
