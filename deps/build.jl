@@ -30,7 +30,15 @@ ROOTENV = get(ENV, "CONDA_JL_HOME") do
     end
 end
 
-USE_MINIFORGE = lowercase(get(ENV, "CONDA_JL_USE_MINIFORGE", DefaultDeps.USE_MINIFORGE ? "1" : "0")) in ("1","true","yes")
+USE_MINIFORGE_DEFAULT = true
+if Sys.ARCH in [:x86, :i686]:
+    USE_MINIFORGE_DEFAULT = false
+    @warn """Using defaults channel as conda-forge is not supported on this platform.
+    Using defaults packages requires a license for some use-cases.
+    """
+end
+
+USE_MINIFORGE = lowercase(get(ENV, "CONDA_JL_USE_MINIFORGE", USE_MINIFORGE_DEFAULT ? "1" : "0")) in ("1","true","yes")
 
 if isdir(ROOTENV) && MINICONDA_VERSION != DefaultDeps.MINICONDA_VERSION
     error("""Miniconda version changed, since last build.

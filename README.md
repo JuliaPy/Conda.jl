@@ -130,8 +130,8 @@ julia> ENV["CONDA_JL_USE_MINIFORGE"] = "1"
 pkg> build Conda
 ```
 
-Also note that you have to use Miniforge for `aarch64-linux-gnu` and
-`aarch64-apple-darwin` platforms as Miniconda is not available for those platforms yet.
+Note that Conda.jl 1.6 and above will use miniforge by default on x86_64, aarch64
+and ppc64le systems.
 
 ## Bugs and suggestions
 
