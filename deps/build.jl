@@ -15,7 +15,7 @@ module DefaultDeps
     end
 
     USE_MINIFORGE_DEFAULT = true
-    if Sys.ARCH in [:x86, :i686]:
+    if Sys.ARCH in [:x86, :i686]
         USE_MINIFORGE_DEFAULT = false
         @warn """The free/open-source Miniforge (i.e. the conda-forge channel) does not support this platform.
 Using the Anaconda/defaults channel instead, which is free for non-commercial use but otherwise may require a license.
