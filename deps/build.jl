@@ -13,8 +13,16 @@ module DefaultDeps
     if !isdefined(@__MODULE__, :ROOTENV)
         const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
     end
+
+    USE_MINIFORGE_DEFAULT = true
+    if Sys.ARCH in [:x86, :i686]
+        USE_MINIFORGE_DEFAULT = false
+        @warn """The free/open-source Miniforge (i.e. the conda-forge channel) does not support this platform.
+Using the Anaconda/defaults channel instead, which is free for non-commercial use but otherwise may require a license.
+        """
+    end
     if !isdefined(@__MODULE__, :USE_MINIFORGE)
-        const USE_MINIFORGE = false
+        const USE_MINIFORGE = USE_MINIFORGE_DEFAULT
     end
 end
 

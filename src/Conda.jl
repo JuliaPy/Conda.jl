@@ -160,8 +160,9 @@ function _installer_url()
     MINIFORGE_PLATFORMS = ["Linux-aarch64", "Linux-x86_64", "Linux-ppc64le",
                            "MacOSX-arm64", "MacOSX-x86_64",
                            "Windows-x86_64"]
-    MINICONDA_PLATFORMS = ["Linux-x86_64", "Linux-x86",
-                           "MacOSX-x86", "MacOSX-x86_64",
+    MINICONDA_PLATFORMS = ["Linux-aarch64", "Linux-x86_64", "Linux-ppc64le",
+                           "Linux-x86", "Linux-s390x",
+                           "MacOSX-arm64", "MacOSX-x86_64", "MacOSX-x86",
                            "Windows-x86", "Windows-x86_64"]
 
     if USE_MINIFORGE
