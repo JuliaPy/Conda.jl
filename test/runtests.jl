@@ -223,7 +223,7 @@ end
             write(depsfile, """
                 const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                 const MINICONDA_VERSION = "2"
-                const USE_MINIFORGE = false
+                const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
                 """)
 
             withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
