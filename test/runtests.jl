@@ -15,9 +15,6 @@ end
 env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
 
-@test Conda.exists("curl", env)
-Conda.add("curl", env)
-
 @testset "Install Python package" begin
     Conda.add("python", env)
     pythonpath = joinpath(Conda.python_dir(env), "python" * exe)
@@ -29,17 +26,22 @@ Conda.add("curl", env)
     run(cmd)
 end
 
-curlvers = Conda.version("curl",env)
-@test curlvers >= v"5.0"
-@test Conda.exists("curl==$curlvers", env)
+@testset "Install executable package" begin
+    @test Conda.exists("zstd", env)
+    Conda.add("zstd", env)
 
-curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
-@test isfile(curl_path)
+    zstdvers = Conda.version("zstd",env)
+    @test zstdvers >= v"1.0"
+    @test Conda.exists("zstd==$zstdvers", env)
 
-@test "curl" in Conda.search("cu*", env)
+    zstd_path = joinpath(Conda.bin_dir(env), "zstd" * exe)
+    @test isfile(zstd_path)
 
-Conda.rm("curl", env)
-@test !isfile(curl_path)
+    @test "zstd" in Conda.search("zst*", env)
+
+    Conda.rm("zstd", env)
+    @test !isfile(zstd_path)
+end
 
 pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
 @test isfile(pythonpath)
