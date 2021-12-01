@@ -37,7 +37,7 @@ end
     wget_path = joinpath(Conda.bin_dir(env), "wget" * exe)
     @test isfile(wget_path)
 
-    @test "wget" in Conda.search("zst*", env)
+    @test "wget" in Conda.search("wg*", env)
 
     Conda.rm("wget", env)
     @test !isfile(wget_path)
