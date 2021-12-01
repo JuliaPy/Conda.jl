@@ -23,9 +23,9 @@ Conda.add("curl", env)
     pythonpath = joinpath(Conda.python_dir(env), "python" * exe)
     @test isfile(pythonpath)
 
-    cmd = Conda._set_conda_env(`$pythonpath -c "import zmq"`, env)
+    cmd = Conda._set_conda_env(`$pythonpath -c "import six"`, env)
     @test_throws Exception run(cmd)
-    Conda.add("pyzmq", env)
+    Conda.add("six", env)
     run(cmd)
 end
 
