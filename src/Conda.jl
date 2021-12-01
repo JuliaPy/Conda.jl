@@ -15,6 +15,7 @@ The main functions in Conda are:
 """
 module Conda
 using JSON, VersionParsing
+import Downloads
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
@@ -198,7 +199,7 @@ function _install_conda(env::Environment, force::Bool=false)
             installer = joinpath(PREFIX, "installer.exe")
         end
         mkpath(PREFIX)
-        download(_installer_url(), installer)
+        Downloads.download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
         if Sys.isunix()
