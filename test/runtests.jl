@@ -27,20 +27,20 @@ rm(Conda.prefix(env); force=true, recursive=true)
 end
 
 @testset "Install executable package" begin
-    @test Conda.exists("zstd", env)
-    Conda.add("zstd", env)
+    @test Conda.exists("wget", env)
+    Conda.add("wget", env)
 
-    zstdvers = Conda.version("zstd",env)
-    @test zstdvers >= v"1.0"
-    @test Conda.exists("zstd==$zstdvers", env)
+    wgetvers = Conda.version("wget",env)
+    @test wgetvers >= v"1.0"
+    @test Conda.exists("wget==$wgetvers", env)
 
-    zstd_path = joinpath(Conda.bin_dir(env), "zstd" * exe)
-    @test isfile(zstd_path)
+    wget_path = joinpath(Conda.bin_dir(env), "wget" * exe)
+    @test isfile(wget_path)
 
-    @test "zstd" in Conda.search("zst*", env)
+    @test "wget" in Conda.search("zst*", env)
 
-    Conda.rm("zstd", env)
-    @test !isfile(zstd_path)
+    Conda.rm("wget", env)
+    @test !isfile(wget_path)
 end
 
 pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
