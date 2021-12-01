@@ -39,9 +39,8 @@ end
 
     @test "curl" in Conda.search("cu*", env)
 
-    # for some reason this is failing with miniconda on CI:
-    # Conda.rm("curl", env)
-    # @test !isfile(curl_path)
+    Conda.rm("curl", env)
+    @test !isfile(curl_path)
 end
 
 pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
