@@ -15,31 +15,33 @@ end
 env = :test_conda_jl
 rm(Conda.prefix(env); force=true, recursive=true)
 
-@test Conda.exists("curl", env)
-Conda.add("curl", env)
-
 @testset "Install Python package" begin
     Conda.add("python", env)
     pythonpath = joinpath(Conda.python_dir(env), "python" * exe)
     @test isfile(pythonpath)
 
-    cmd = Conda._set_conda_env(`$pythonpath -c "import zmq"`, env)
+    cmd = Conda._set_conda_env(`$pythonpath -c "import six"`, env)
     @test_throws Exception run(cmd)
-    Conda.add("pyzmq", env)
+    Conda.add("six", env)
     run(cmd)
 end
 
-curlvers = Conda.version("curl",env)
-@test curlvers >= v"5.0"
-@test Conda.exists("curl==$curlvers", env)
+@testset "Install executable package" begin
+    @test Conda.exists("curl", env)
+    Conda.add("curl", env)
 
-curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
-@test isfile(curl_path)
+    curlvers = Conda.version("curl",env)
+    @test curlvers >= v"1.0"
+    @test Conda.exists("curl==$curlvers", env)
 
-@test "curl" in Conda.search("cu*", env)
+    curl_path = joinpath(Conda.bin_dir(env), "curl" * exe)
+    @test isfile(curl_path)
 
-Conda.rm("curl", env)
-@test !isfile(curl_path)
+    @test "curl" in Conda.search("cu*", env)
+
+    Conda.rm("curl", env)
+    @test !isfile(curl_path)
+end
 
 pythonpath = joinpath(Conda.PYTHONDIR, "python" * exe)
 @test isfile(pythonpath)

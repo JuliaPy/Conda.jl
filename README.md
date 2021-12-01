@@ -1,7 +1,6 @@
 # Conda.jl
 
-[![Build Status -- OS X and Linux](https://travis-ci.org/JuliaPy/Conda.jl.svg?branch=master)](https://travis-ci.org/JuliaPy/Conda.jl)
-[![Build status -- Windows](https://ci.appveyor.com/api/projects/status/edlxohso05re3v40/branch/master?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/conda-jl)
+[![Build Status](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml)
 
 This package allows one to use [conda](http://conda.pydata.org/) as a cross-platform binary provider for Julia for other Julia packages,
 especially to install binaries that have complicated dependencies
