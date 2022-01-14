@@ -2,7 +2,7 @@ using Conda, Pkg, Test, VersionParsing
 
 exe = Sys.iswindows() ? ".exe" : ""
 
-Conda.update()
+Conda.update(Conda.ROOTENV)
 
 if Conda.USE_MINIFORGE
     default_channel = "conda-forge"
@@ -129,6 +129,10 @@ end
     @test "ansi2html" ∉ installed
 end
 
+@testset "Conda.current_env" begin
+    @test Conda.current_env() == Conda.DEFAULTENV === nothing ? Conda.ROOTENV : Conda.DEFAULTENV
+end
+
 @testset "build" begin
     condadir = abspath(first(DEPOT_PATH), "conda")
     depsfile = joinpath(@__DIR__, "..", "deps", "deps.jl")
@@ -162,12 +166,13 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_DEFAULTENV" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                    const DEFAULTENV = "$(escape_string(joinpath(condadir, "3")))"
                     """
             end
         end
@@ -179,12 +184,13 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "1") do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "1", "CONDA_JL_DEFAULTENV" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = true
+                    const DEFAULTENV = "$(escape_string(joinpath(condadir, "3")))"
                     """
             end
         end
@@ -193,12 +199,13 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "0") do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "0", "CONDA_JL_DEFAULTENV" => nothing) do
                 Pkg.build("Conda")
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = false
+                    const DEFAULTENV = "$(escape_string(joinpath(condadir, "3")))"
                     """
             end
         end
@@ -207,14 +214,25 @@ end
     @testset "custom home" begin
         preserve_build() do
             mktempdir() do dir
-                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing) do
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_DEFAULTENV" => nothing) do
                     Pkg.build("Conda")
                     @test read(depsfile, String) == """
                         const ROOTENV = "$(escape_string(dir))"
                         const MINICONDA_VERSION = "3"
                         const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                        const DEFAULTENV = "$(escape_string(dir))"
                         """
                 end
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_DEFAULTENV" => joinpath(dir, "envs", "foobar")) do
+                    Pkg.build("Conda")
+                    @test read(depsfile, String) == """
+                        const ROOTENV = "$(escape_string(dir))"
+                        const MINICONDA_VERSION = "3"
+                        const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                        const DEFAULTENV = "$(escape_string(joinpath(dir, "envs", "foobar")))"
+                        """
+                end
+
             end
         end
     end

@@ -52,10 +52,16 @@ These will require rebuilding.
 """)
 end
 
+# New as of Conda.jl 2.0
+# Allows setting a default environment other than rootenv
+# Defaults to to ROOTENV
+DEFAULTENV = get(ENV, "CONDA_JL_DEFAULTENV", ROOTENV)
+
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 const USE_MINIFORGE = $USE_MINIFORGE
+const DEFAULTENV = "$(escape_string(DEFAULTENV))"
 """
 
 mkpath(condadir)
