@@ -20,14 +20,16 @@ import Downloads
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
 if isfile(deps_file)
-    # Includes definition for ROOTENV, and MINICONDA_VERSION
+    # Includes definition for ROOTENV, DEFAULTENV, and MINICONDA_VERSION
     include(deps_file)
 else
     error("Conda is not properly configured.  Run Pkg.build(\"Conda\") before importing the Conda module.")
 end
 
 if ! @isdefined(DEFAULTENV)
-    const DEFAULTENV = nothing
+    # DEFAULTENV is the default for most of the env keyword arguments below
+    # ROOTENV should contain the conda executable at $ROOTENV/bin/conda
+    const DEFAULTENV = ROOTENV
 end
 
 const Environment = Union{AbstractString,Symbol}
@@ -105,7 +107,7 @@ Get a cleaned up environment
 
 Any environment variable starting by CONDA or PYTHON will interact with the run.
 """
-function _get_conda_env(env::Environment=current_env())
+function _get_conda_env(env::Environment=DEFAULTENV)
     env_var = copy(ENV)
     to_remove = String[]
     for var in keys(env_var)
@@ -125,19 +127,19 @@ function _get_conda_env(env::Environment=current_env())
     env_var
 end
 
-_set_conda_env(cmd, env::Environment=current_env()) = setenv(cmd, _get_conda_env(env))
+_set_conda_env(cmd, env::Environment=DEFAULTENV) = setenv(cmd, _get_conda_env(env))
 
 "Run conda command with environment variables set."
-function runconda(args::Cmd, env::Environment=ROOTENV)
-    _install_conda(env)
+function runconda(args::Cmd, env::Environment=DEFAULTENV)
+    _install_conda(ROOTENV)
     @info("Running $(`conda $args`) in $(env==ROOTENV ? "root" : env) environment")
     run(_set_conda_env(`$conda $args`, env))
     return nothing
 end
 
 "Run conda command with environment variables set and return the json output as a julia object"
-function parseconda(args::Cmd, env::Environment=ROOTENV)
-    _install_conda(env)
+function parseconda(args::Cmd, env::Environment=DEFAULTENV)
+    _install_conda(ROOTENV)
     JSON.parse(read(_set_conda_env(`$conda $args --json`, env), String))
 end
 
@@ -192,8 +194,8 @@ end
 "Suppress progress bar in continuous integration environments"
 _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 
-"Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
-function _install_conda(env::Environment, force::Bool=false)
+"Install miniconda if it hasn't been installed yet; _install_conda(ROOTENV, true) installs Conda even if it has already been installed."
+function _install_conda(env::Environment = ROOTENV, force::Bool=false)
     if force || !isfile(Conda.conda)
         @info("Downloading miniconda installer ...")
         if Sys.isunix()
@@ -222,18 +224,18 @@ end
 const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
 
 "Install a new package or packages."
-function add(pkg::PkgOrPkgs, env::Environment=current_env(); channel::AbstractString="")
+function add(pkg::PkgOrPkgs, env::Environment=DEFAULTENV; channel::AbstractString="")
     c = isempty(channel) ? `` : `-c $channel`
     runconda(`install $(_quiet()) -y $c $pkg`, env)
 end
 
 "Uninstall a package or packages."
-function rm(pkg::PkgOrPkgs, env::Environment=current_env())
+function rm(pkg::PkgOrPkgs, env::Environment=DEFAULTENV)
     runconda(`remove $(_quiet()) -y $pkg`, env)
 end
 
 "Update all installed packages."
-function update(env::Environment=current_env())
+function update(env::Environment=DEFAULTENV)
     if env == ROOTENV
         runconda(`update $(_quiet()) -y --all conda`, env)
     else
@@ -242,8 +244,8 @@ function update(env::Environment=current_env())
 end
 
 "List all installed packages as an dict of tuples with (version_number, fullname)."
-function  _installed_packages_dict(env::Environment=current_env())
-    _install_conda(env)
+function  _installed_packages_dict(env::Environment=DEFAULTENV)
+    _install_conda(ROOTENV)
     package_dict = Dict{String, Tuple{VersionNumber, String}}()
     for line in eachline(_set_conda_env(`$conda list`, env))
         line = chomp(line)
@@ -261,32 +263,32 @@ function  _installed_packages_dict(env::Environment=current_env())
 end
 
 "List all installed packages as an array."
-_installed_packages(env::Environment=current_env()) = keys(_installed_packages_dict(env))
+_installed_packages(env::Environment=DEFAULTENV) = keys(_installed_packages_dict(env))
 
 "List all installed packages to standard output."
-function list(env::Environment=current_env())
+function list(env::Environment=DEFAULTENV)
     runconda(`list`, env)
 end
 
 """
-    export_list(filepath, env=current_env())
-    export_list(io, env=current_env())
+    export_list(filepath, env=DEFAULTENV)
+    export_list(io, env=DEFAULTENV)
 
 List all packages and write them to an export file for use the Conda.import_list
 """
-function export_list(filepath::AbstractString, env::Environment=current_env())
-    _install_conda(env)
+function export_list(filepath::AbstractString, env::Environment=DEFAULTENV)
+    _install_conda(ROOTENV)
     open(filepath, "w") do fobj
         export_list(fobj, env)
     end
 end
 
-function export_list(io::IO, env::Environment=current_env())
+function export_list(io::IO, env::Environment=DEFAULTENV)
     write(io, read(_set_conda_env(`$conda list --export`, env)))
 end
 
 "Get the exact version of a package as a `VersionNumber`."
-function version(name::AbstractString, env::Environment=current_env())
+function version(name::AbstractString, env::Environment=DEFAULTENV)
     packages = parseconda(`list`, env)
     for package in packages
         pname = get(package, "name", "")
@@ -296,12 +298,12 @@ function version(name::AbstractString, env::Environment=current_env())
 end
 
 "Search packages for a string"
-function search(package::AbstractString, env::Environment=current_env())
+function search(package::AbstractString, env::Environment=DEFAULTENV)
     return collect(keys(parseconda(`search $package`, env)))
 end
 
 "Search a specific version of a package"
-function search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}, env::Environment=current_env())
+function search(package::AbstractString, _ver::Union{AbstractString,VersionNumber}, env::Environment=DEFAULTENV)
     ret=parseconda(`search $package`, env)
     out = String[]
     ver = string(_ver)
@@ -316,7 +318,7 @@ function search(package::AbstractString, _ver::Union{AbstractString,VersionNumbe
 end
 
 "Check if a given package exists."
-function exists(package::AbstractString, env::Environment=current_env())
+function exists(package::AbstractString, env::Environment=DEFAULTENV)
     if occursin("==", package)
       pkg,ver=split(package,"==")  # Remove version if provided
       return pkg in search(pkg,ver,env)
@@ -331,7 +333,7 @@ function exists(package::AbstractString, env::Environment=current_env())
 end
 
 "Get the list of channels used to search packages"
-function channels(env::Environment=current_env())
+function channels(env::Environment=DEFAULTENV)
     ret=parseconda(`config --get channels --file $(conda_rc(env))`, env)
     if haskey(ret["get"], "channels")
         return collect(String, ret["get"]["channels"])
@@ -341,25 +343,13 @@ function channels(env::Environment=current_env())
 end
 
 "Add a channel to the list of channels"
-function add_channel(channel::AbstractString, env::Environment=current_env())
+function add_channel(channel::AbstractString, env::Environment=DEFAULTENV)
     runconda(`config --add channels $channel --file $(conda_rc(env)) --force`, env)
 end
 
 "Remove a channel from the list of channels"
-function rm_channel(channel::AbstractString, env::Environment=current_env())
+function rm_channel(channel::AbstractString, env::Environment=DEFAULTENV)
     runconda(`config --remove channels $channel --file $(conda_rc(env)) --force`, env)
-end
-
-"""
-    current_env()
-
-Get the path to the current conda environment as configured at build time
-via `CONDA_JL_DEFAULTENV`.
-If that does not exist, default to `ROOTENV` determined by `CONDA_JL_HOME` during build.
-"""
-function current_env()
-    # Alternative: get(ENV, "CONDA_PREFIX", ROOTENV)
-    return DEFAULTENV === nothing ? ROOTENV : DEFAULTENV
 end
 
 """
@@ -425,29 +415,29 @@ function import_list(io::IO, args...; kwargs...)
 end
 
 """
-    pip_interop(bool::Bool, env::Environment=current_env())
+    pip_interop(bool::Bool, env::Environment=$DEFAULTENV)
 
 Sets the `pip_interop_enabled` value to bool.
 If `true` then the conda solver is allowed to interact with non-conda-installed python packages.
 """
-function pip_interop(bool::Bool, env::Environment=ROOTENV)
+function pip_interop(bool::Bool, env::Environment=DEFAULTENV)
     runconda(`config --set pip_interop_enabled $bool --file $(conda_rc(env))`, env)
 end
 
 """
-    pip_interop(env::Environment=$ROOTENV)
+    pip_interop(env::Environment=$DEFAULTENV)
 
 Gets the `pip_interop_enabled` value from the conda config.
 """
-function pip_interop(env::Environment=ROOTENV)
+function pip_interop(env::Environment=DEFAULTENV)
     dict = parseconda(`config --get pip_interop_enabled --file $(conda_rc(env))`, env)["get"]
     get(dict, "pip_interop_enabled", false)
 end
 
-function check_pip_interop(env::Environment=ROOTENV)
+function check_pip_interop(env::Environment=DEFAULTENV)
     pip_interop(env) || error("""
                               pip_interop is not enabled
-                              Use `Conda.pip_interop(true; [env::Environment=ROOTENV])` to enable
+                              Use `Conda.pip_interop(true; [env::Environment=DEFAULTENV])` to enable
                               """)
 end
 
@@ -459,7 +449,7 @@ function _pip(env::Environment)
     joinpath(script_dir(env), _pip())
 end
 
-function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=ROOTENV)
+function pip(cmd::AbstractString, pkgs::PkgOrPkgs, env::Environment=DEFAULTENV)
     check_pip_interop(env)
     # parse the pip command
     _cmd = String[split(cmd, " ")...]
