@@ -72,13 +72,7 @@ const PYTHONDIR = python_dir(ROOTENV)
 
 if ! @isdefined(CONDA_EXE)
     # We have an oudated deps.jl file that does not define CONDA_EXE
-    const CONDA_EXE = if Sys.iswindows()
-        p = script_dir(ROOTENV)
-        conda_bat = joinpath(p, "conda.bat")
-        isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
-    else
-        joinpath(bin_dir(ROOTENV), "conda")
-    end
+    error("CONDA_EXE not defined in $deps_file.\nPlease rebuild Conda.jl via `using Pkg; pkg\"build Conda\";`")
 end
 # note: the same conda program is used for all environments
 const conda = CONDA_EXE
