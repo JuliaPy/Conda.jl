@@ -71,6 +71,7 @@ Conda.add("zlib", env; channel=alt_channel)
 
 @testset "Batch install and uninstall" begin
     mktempdir() do env
+        Conda.create(env)
         Conda.add(["affine", "ansi2html"], env)
         installed = Conda._installed_packages(env)
         @test "affine" ∈ installed
@@ -89,6 +90,7 @@ Conda.clean(; debug=true)
 @testset "Exporting and creating environments" begin
     mktempdir() do env
         new_env = :test_conda_jl_2
+        Conda.create(env)
         Conda.add("curl", env)
         Conda.export_list("conda-pkg.txt", env)
 

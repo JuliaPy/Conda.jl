@@ -213,7 +213,7 @@ function _install_conda(env::Environment, force::Bool=false)
         end
     end
     if !isdir(prefix(env))
-        runconda(`create $(_quiet()) -y -p $(prefix(env))`)
+        create(env)
     end
 end
 
@@ -228,6 +228,10 @@ end
 "Uninstall a package or packages."
 function rm(pkg::PkgOrPkgs, env::Environment=ROOTENV)
     runconda(`remove $(_quiet()) -y $pkg`, env)
+end
+
+function create(env::Environment)
+    runconda(`create $(_quiet()) -y -p $(prefix(env))`)
 end
 
 "Update all installed packages."
