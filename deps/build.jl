@@ -73,6 +73,19 @@ CONDA_EXE = get(ENV, "CONDA_JL_CONDA_EXE") do
     end
 end
 
+if haskey(ENV, "CONDA_JL_CONDA_EXE")
+    # Check to see if CONDA_EXE is an executable file
+    if isfile(CONDA_EXE)
+        if uperm(CONDA_EXE) & 0x01 > 0
+            @info "Executable conda located." CONDA_EXE
+        else
+            error("$CONDA_EXE cannot be executed by the current user.")
+        end
+    else
+        error("$CONDA_EXE does not exist.")
+    end
+end
+
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
