@@ -189,24 +189,21 @@ _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
-        # This assumes that the conda executable will in some directory under
-        # CONDA_EXE_PREFIX.
-        # Ex: If CONDA_EXE="$HOME/miniforge3/bin/conda", then CONDA_EXE_PREFIX="$HOME/miniforge3"
-        CONDA_EXE_PREFIX = conda |> dirname |> dirname
+        @assert startswith(abspath(Conda.conda), abspath(PREFIX)) "CONDA_EXE, $(conda), does not exist within $PREFIX"
         @info("Downloading miniconda installer ...")
         if Sys.isunix()
-            installer = joinpath(CONDA_EXE_PREFIX, "installer.sh")
+            installer = joinpath(PREFIX, "installer.sh")
         end
         if Sys.iswindows()
-            installer = joinpath(CONDA_EXE_PREFIX, "installer.exe")
+            installer = joinpath(PREFIX, "installer.exe")
         end
-        mkpath(CONDA_EXE_PREFIX)
+        mkpath(PREFIX)
         Downloads.download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
         if Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
-            run(`$installer -b -f -p $CONDA_EXE_PREFIX`)
+            run(`$installer -b -f -p $PREFIX`)
         end
         if Sys.iswindows()
             run(Cmd(`$installer /S --no-shortcuts /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))

@@ -79,12 +79,19 @@ if haskey(ENV, "CONDA_JL_CONDA_EXE")
         if uperm(CONDA_EXE) & 0x01 > 0
             @info "Executable conda located." CONDA_EXE
         else
-            error("$CONDA_EXE cannot be executed by the current user.")
+            error("CONDA_JL_CONDA_EXE, $CONDA_EXE, cannot be executed by the current user.")
         end
     else
-        error("$CONDA_EXE does not exist.")
+        error("CONDA_JL_CONDA_EXE, $CONDA_EXE, does not exist.")
+    end
+else
+    if !isfile(CONDA_EXE)
+        # An old CONDA_EXE has gone missing, revert to default in ROOTENV
+        @info "CONDA_EXE not found. Reverting to default in ROOTENV" CONDA_EXE ROOTENV
+        CONDA_EXE = DefaultDeps.default_conda_exe(ROOTENV)
     end
 end
+
 
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
