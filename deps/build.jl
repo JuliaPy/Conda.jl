@@ -24,15 +24,18 @@ Using the Anaconda/defaults channel instead, which is free for non-commercial us
     if !isdefined(@__MODULE__, :USE_MINIFORGE)
         const USE_MINIFORGE = USE_MINIFORGE_DEFAULT
     end
-    if !isdefined(@__MODULE__, :CONDA_EXE)
-        const CONDA_EXE = if Sys.iswindows()
+    function default_conda_exe(ROOTENV)
+        @static if Sys.iswindows()
             p = joinpath(ROOTENV, "Script")
             conda_bat = joinpath(p, "conda.bat")
             isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
         else
             joinpath(ROOTENV, "bin", "conda")
         end
+    end
 
+    if !isdefined(@__MODULE__, :CONDA_EXE)
+        const CONDA_EXE = default_conda_exe(ROOTENV)
     end
 end
 
@@ -62,7 +65,13 @@ These will require rebuilding.
 """)
 end
 
-CONDA_EXE = get(ENV, "CONDA_JL_CONDA_EXE", DefaultDeps.CONDA_EXE)
+CONDA_EXE = get(ENV, "CONDA_JL_CONDA_EXE") do
+    if ROOTENV == DefaultDeps.ROOTENV
+        DefaultDeps.CONDA_EXE
+    else
+        DefaultDeps.default_conda_exe(ROOTENV)
+    end
+end
 
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
