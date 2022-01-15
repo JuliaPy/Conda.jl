@@ -70,14 +70,18 @@ function python_dir(env::Environment)
 end
 const PYTHONDIR = python_dir(ROOTENV)
 
-# note: the same conda program is used for all environments
-const conda = if Sys.iswindows()
-    p = script_dir(ROOTENV)
-    conda_bat = joinpath(p, "conda.bat")
-    isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
-else
-    joinpath(bin_dir(ROOTENV), "conda")
+if ! @isdefined(CONDA_EXE)
+    # We have an oudated deps.jl file that does not define CONDA_EXE
+    const CONDA_EXE = if Sys.iswindows()
+        p = script_dir(ROOTENV)
+        conda_bat = joinpath(p, "conda.bat")
+        isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
+    else
+        joinpath(bin_dir(ROOTENV), "conda")
+    end
 end
+# note: the same conda program is used for all environments
+const conda = CONDA_EXE
 
 "Path to the condarc file"
 function conda_rc(env::Environment)
@@ -191,20 +195,24 @@ _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
+        # This assumes that the conda executable will in some directory under
+        # CONDA_EXE_PREFIX.
+        # Ex: If CONDA_EXE="$HOME/miniforge3/bin/conda", then CONDA_EXE_PREFIX="$HOME/miniforge3"
+        CONDA_EXE_PREFIX = conda |> dirname |> dirname
         @info("Downloading miniconda installer ...")
         if Sys.isunix()
-            installer = joinpath(PREFIX, "installer.sh")
+            installer = joinpath(CONDA_EXE_PREFIX, "installer.sh")
         end
         if Sys.iswindows()
-            installer = joinpath(PREFIX, "installer.exe")
+            installer = joinpath(CONDA_EXE_PREFIX, "installer.exe")
         end
-        mkpath(PREFIX)
+        mkpath(CONDA_EXE_PREFIX)
         Downloads.download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
         if Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
-            run(`$installer -b -f -p $PREFIX`)
+            run(`$installer -b -f -p $CONDA_EXE_PREFIX`)
         end
         if Sys.iswindows()
             run(Cmd(`$installer /S --no-shortcuts /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
