@@ -158,7 +158,7 @@ end
 
     function default_conda_exe(ROOTENV)
         @static if Sys.iswindows()
-            p = joinpath(ROOTENV, "Script")
+            p = joinpath(ROOTENV, "Scripts")
             conda_bat = joinpath(p, "conda.bat")
             isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
         else
