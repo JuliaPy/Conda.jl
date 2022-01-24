@@ -76,7 +76,7 @@ end
 if haskey(ENV, "CONDA_JL_CONDA_EXE")
     # Check to see if CONDA_EXE is an executable file
     if isfile(CONDA_EXE)
-        if uperm(CONDA_EXE) & 0x01 > 0
+        if Sys.isexecutable(CONDA_EXE)
             @info "Executable conda located." CONDA_EXE
         else
             error("CONDA_JL_CONDA_EXE, $CONDA_EXE, cannot be executed by the current user.")
