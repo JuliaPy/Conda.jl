@@ -76,7 +76,11 @@ const conda = if Sys.iswindows()
     conda_bat = joinpath(p, "conda.bat")
     isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
 else
-    joinpath(bin_dir(ROOTENV), "conda")
+    if haskey(ENV, "CONDA_EXE")
+        ENV["CONDA_EXE"]
+    else
+        joinpath(bin_dir(ROOTENV), "conda")
+    end
 end
 
 "Path to the condarc file"
