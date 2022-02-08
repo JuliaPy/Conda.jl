@@ -70,36 +70,42 @@ Conda.rm_channel("foo", env)
 Conda.add("zlib", env; channel=alt_channel)
 
 @testset "Batch install and uninstall" begin
-    Conda.add(["affine", "ansi2html"], env)
-    installed = Conda._installed_packages(env)
-    @test "affine" ∈ installed
-    @test "ansi2html" ∈ installed
+    mktempdir() do env
+        Conda.create(env)
+        Conda.add(["affine", "ansi2html"], env)
+        installed = Conda._installed_packages(env)
+        @test "affine" ∈ installed
+        @test "ansi2html" ∈ installed
 
-    Conda.rm(["affine", "ansi2html"], env)
-    installed = Conda._installed_packages(env)
-    @test "affine" ∉ installed
-    @test "ansi2html" ∉ installed
+        Conda.rm(["affine", "ansi2html"], env)
+        installed = Conda._installed_packages(env)
+        @test "affine" ∉ installed
+        @test "ansi2html" ∉ installed
+    end
 end
 
 # Run conda clean
 Conda.clean(; debug=true)
 
 @testset "Exporting and creating environments" begin
-    new_env = :test_conda_jl_2
-    Conda.add("curl", env)
-    Conda.export_list("conda-pkg.txt", env)
+    mktempdir() do env
+        new_env = :test_conda_jl_2
+        Conda.create(env)
+        Conda.add("curl", env)
+        Conda.export_list("conda-pkg.txt", env)
 
-    # Create a new environment
-    rm(Conda.prefix(new_env); force=true, recursive=true)
-    Conda.import_list(
-        IOBuffer(read("conda-pkg.txt")), new_env; channels=["foo", alt_channel, default_channel]
-    )
+        # Create a new environment
+        rm(Conda.prefix(new_env); force=true, recursive=true)
+        Conda.import_list(
+            IOBuffer(read("conda-pkg.txt")), new_env; channels=["foo", alt_channel, default_channel]
+        )
 
-    # Ensure that our new environment has our channels and package installed.
-    @test Conda.channels(new_env) == ["foo", alt_channel, default_channel]
-    installed = Conda._installed_packages(new_env)
-    @test "curl" ∈ installed
-    rm("conda-pkg.txt")
+        # Ensure that our new environment has our channels and package installed.
+        @test Conda.channels(new_env) == ["foo", alt_channel, default_channel]
+        installed = Conda._installed_packages(new_env)
+        @test "curl" ∈ installed
+        rm("conda-pkg.txt")
+    end
 end
 
 @testset "Conda.pip_interop" begin
@@ -150,6 +156,17 @@ end
         end
     end
 
+    function default_conda_exe(ROOTENV)
+        @static if Sys.iswindows()
+            p = joinpath(ROOTENV, "Scripts")
+            conda_bat = joinpath(p, "conda.bat")
+            isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
+        else
+            joinpath(ROOTENV, "bin", "conda")
+        end
+    end
+
+
     if Sys.ARCH in [:x86, :i686]
         CONDA_JL_USE_MINIFORGE_DEFAULT = "false"
     else
@@ -162,12 +179,15 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_CONDA_EXE" => nothing) do
                 Pkg.build("Conda")
+                local ROOTENV=joinpath(condadir, "3")
+                local CONDA_EXE=default_conda_exe(ROOTENV)
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const ROOTENV = "$(escape_string(ROOTENV))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                    const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                     """
             end
         end
@@ -179,12 +199,15 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "1") do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "1", "CONDA_JL_CONDA_EXE" => nothing) do
                 Pkg.build("Conda")
+                local ROOTENV=joinpath(condadir, "3")
+                local CONDA_EXE=default_conda_exe(ROOTENV)
                 @test read(depsfile, String) == """
                     const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = true
+                    const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                     """
             end
         end
@@ -193,12 +216,15 @@ end
             @test !isfile(depsfile)
             @test !isfile(joinpath(condadir, "deps.jl"))
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "0") do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => "0", "CONDA_JL_CONDA_EXE" => nothing) do
                 Pkg.build("Conda")
+                local ROOTENV=joinpath(condadir, "3")
+                local CONDA_EXE=default_conda_exe(ROOTENV)
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const ROOTENV = "$(escape_string(ROOTENV))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = false
+                    const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                     """
             end
         end
@@ -207,12 +233,14 @@ end
     @testset "custom home" begin
         preserve_build() do
             mktempdir() do dir
-                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing) do
+                withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => dir, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_CONDA_EXE" => nothing) do
                     Pkg.build("Conda")
+                    local CONDA_EXE=default_conda_exe(dir)
                     @test read(depsfile, String) == """
                         const ROOTENV = "$(escape_string(dir))"
                         const MINICONDA_VERSION = "3"
                         const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                        const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                         """
                 end
             end
@@ -222,28 +250,37 @@ end
     @testset "version mismatch" begin
         preserve_build() do
             # Mismatch in written file
+            local ROOTENV=joinpath(condadir, "3")
+            local CONDA_EXE=default_conda_exe(ROOTENV)
             write(depsfile, """
-                const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                const ROOTENV = "$(escape_string(ROOTENV))"
                 const MINICONDA_VERSION = "2"
                 const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                 """)
 
-            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
+            withenv("CONDA_JL_VERSION" => nothing, "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_CONDA_EXE" => nothing) do
                 Pkg.build("Conda")
+                local ROOTENV=joinpath(condadir, "2")
+                local CONDA_EXE=default_conda_exe(ROOTENV)
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(escape_string(joinpath(condadir, "2")))"
+                    const ROOTENV = "$(escape_string(ROOTENV))"
                     const MINICONDA_VERSION = "2"
                     const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                    const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                     """
             end
 
             # ROOTENV should be replaced since CONDA_JL_HOME wasn't explicitly set
-            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing) do
+            withenv("CONDA_JL_VERSION" => "3", "CONDA_JL_HOME" => nothing, "CONDA_JL_USE_MINIFORGE" => nothing, "CONDA_JL_CONDA_EXE" => nothing) do
                 Pkg.build("Conda")
+                local ROOTENV=joinpath(condadir, "3")
+                local CONDA_EXE=default_conda_exe(ROOTENV)
                 @test read(depsfile, String) == """
-                    const ROOTENV = "$(escape_string(joinpath(condadir, "3")))"
+                    const ROOTENV = "$(escape_string(ROOTENV))"
                     const MINICONDA_VERSION = "3"
                     const USE_MINIFORGE = $(CONDA_JL_USE_MINIFORGE_DEFAULT)
+                    const CONDA_EXE = "$(escape_string(CONDA_EXE))"
                     """
             end
         end

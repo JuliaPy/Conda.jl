@@ -70,14 +70,12 @@ function python_dir(env::Environment)
 end
 const PYTHONDIR = python_dir(ROOTENV)
 
-# note: the same conda program is used for all environments
-const conda = if Sys.iswindows()
-    p = script_dir(ROOTENV)
-    conda_bat = joinpath(p, "conda.bat")
-    isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
-else
-    joinpath(bin_dir(ROOTENV), "conda")
+if ! @isdefined(CONDA_EXE)
+    # We have an oudated deps.jl file that does not define CONDA_EXE
+    error("CONDA_EXE not defined in $deps_file.\nPlease rebuild Conda.jl via `using Pkg; pkg\"build Conda\";`")
 end
+# note: the same conda program is used for all environments
+const conda = CONDA_EXE
 
 "Path to the condarc file"
 function conda_rc(env::Environment)
@@ -191,6 +189,7 @@ _quiet() = get(ENV, "CI", "false") == "true" ? `-q` : ``
 "Install miniconda if it hasn't been installed yet; _install_conda(true) installs Conda even if it has already been installed."
 function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
+        @assert startswith(abspath(Conda.conda), abspath(PREFIX)) "CONDA_EXE, $(conda), does not exist within $PREFIX"
         @info("Downloading miniconda installer ...")
         if Sys.isunix()
             installer = joinpath(PREFIX, "installer.sh")
@@ -211,7 +210,7 @@ function _install_conda(env::Environment, force::Bool=false)
         end
     end
     if !isdir(prefix(env))
-        runconda(`create $(_quiet()) -y -p $(prefix(env))`)
+        create(env)
     end
 end
 
@@ -226,6 +225,10 @@ end
 "Uninstall a package or packages."
 function rm(pkg::PkgOrPkgs, env::Environment=ROOTENV)
     runconda(`remove $(_quiet()) -y $pkg`, env)
+end
+
+function create(env::Environment)
+    runconda(`create $(_quiet()) -y -p $(prefix(env))`)
 end
 
 "Update all installed packages."

@@ -24,6 +24,19 @@ Using the Anaconda/defaults channel instead, which is free for non-commercial us
     if !isdefined(@__MODULE__, :USE_MINIFORGE)
         const USE_MINIFORGE = USE_MINIFORGE_DEFAULT
     end
+    function default_conda_exe(ROOTENV)
+        @static if Sys.iswindows()
+            p = joinpath(ROOTENV, "Scripts")
+            conda_bat = joinpath(p, "conda.bat")
+            isfile(conda_bat) ? conda_bat : joinpath(p, "conda.exe")
+        else
+            joinpath(ROOTENV, "bin", "conda")
+        end
+    end
+
+    if !isdefined(@__MODULE__, :CONDA_EXE)
+        const CONDA_EXE = default_conda_exe(ROOTENV)
+    end
 end
 
 MINICONDA_VERSION = get(ENV, "CONDA_JL_VERSION", DefaultDeps.MINICONDA_VERSION)
@@ -52,10 +65,39 @@ These will require rebuilding.
 """)
 end
 
+CONDA_EXE = get(ENV, "CONDA_JL_CONDA_EXE") do
+    if ROOTENV == DefaultDeps.ROOTENV
+        DefaultDeps.CONDA_EXE
+    else
+        DefaultDeps.default_conda_exe(ROOTENV)
+    end
+end
+
+if haskey(ENV, "CONDA_JL_CONDA_EXE")
+    # Check to see if CONDA_EXE is an executable file
+    if isfile(CONDA_EXE)
+        if Sys.isexecutable(CONDA_EXE)
+            @info "Executable conda located." CONDA_EXE
+        else
+            error("CONDA_JL_CONDA_EXE, $CONDA_EXE, cannot be executed by the current user.")
+        end
+    else
+        error("CONDA_JL_CONDA_EXE, $CONDA_EXE, does not exist.")
+    end
+else
+    if !isfile(CONDA_EXE)
+        # An old CONDA_EXE has gone missing, revert to default in ROOTENV
+        @info "CONDA_EXE not found. Reverting to default in ROOTENV" CONDA_EXE ROOTENV
+        CONDA_EXE = DefaultDeps.default_conda_exe(ROOTENV)
+    end
+end
+
+
 deps = """
 const ROOTENV = "$(escape_string(ROOTENV))"
 const MINICONDA_VERSION = "$(escape_string(MINICONDA_VERSION))"
 const USE_MINIFORGE = $USE_MINIFORGE
+const CONDA_EXE = "$(escape_string(CONDA_EXE))"
 """
 
 mkpath(condadir)

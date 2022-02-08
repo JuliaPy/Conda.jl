@@ -3,8 +3,7 @@
 [![Build Status](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml)
 
 This package allows one to use [conda](http://conda.pydata.org/) as a cross-platform binary provider for Julia for other Julia packages,
-especially to install binaries that have complicated dependencies
-like Python.
+especially to install binaries that have complicated dependencies like Python.
 
 `conda` is a package manager which started as the binary package manager for the
 Anaconda Python distribution, but it also provides arbitrary packages. Instead
@@ -80,6 +79,20 @@ julia> ENV["CONDA_JL_HOME"] = "/path/to/miniconda/envs/conda_jl"  # change this 
 
 pkg> build Conda
 ```
+
+## Using a conda executable outside of the home environment
+To use a specific conda executable, set the `CONDA_JL_CONDA_EXE` environment
+variable to the location of the conda executable. This conda executable can
+exist outside of the environment set by `CONDA_JL_HOME`. To apply the settting,
+rebuild `Conda.jl`. In Julia, run:
+
+```jl
+julia> ENV["CONDA_JL_CONDA_EXE"] = "/path/to/miniconda/bin/conda" # change this to the path of the conda executable
+
+pkg> build Conda
+```
+
+*The use of `CONDA_JL_CONDA_EXE` requires at least version 1.7 of Conda.jl.*
 
 ## Conda and pip
 As of [conda 4.6.0](https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/pip-interoperability.html#improving-interoperability-with-pip) there is improved support for PyPi packages.
