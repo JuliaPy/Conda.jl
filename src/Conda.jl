@@ -374,7 +374,7 @@ function clean(;
 
     flags = [
         "--debug",
-        "--index-",
+        "--index-cache",
         "--lock",
         "--tarballs",
         "--packages",
