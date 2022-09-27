@@ -375,7 +375,6 @@ function clean(;
         "--lock",
         "--tarballs",
         "--packages",
-        "--source-cache",
     ]
     cmd = Cmd([conda, "clean", "--yes", flags[kwargs]...])
     run(_set_conda_env(cmd))
