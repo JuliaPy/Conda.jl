@@ -191,16 +191,18 @@ function _install_conda(env::Environment, force::Bool=false)
     if force || !isfile(Conda.conda)
         @assert startswith(abspath(Conda.conda), abspath(PREFIX)) "CONDA_EXE, $(conda), does not exist within $PREFIX"
         @info("Downloading miniconda installer ...")
+        INSTALLER_DIR = tempdir()
         if Sys.isunix()
-            installer = joinpath(PREFIX, "installer.sh")
+            installer = joinpath(INSTALLER_DIR, "installer.sh")
         end
         if Sys.iswindows()
-            installer = joinpath(PREFIX, "installer.exe")
+            installer = joinpath(INSTALLER_DIR, "installer.exe")
         end
-        mkpath(PREFIX)
+        mkpath(INSTALLER_DIR)
         Downloads.download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
+        mkpath(PREFIX)
         if Sys.isunix()
             chmod(installer, 33261)  # 33261 corresponds to 755 mode of the 'chmod' program
             run(`$installer -b -f -p $PREFIX`)
