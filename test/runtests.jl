@@ -97,11 +97,11 @@ Conda.clean(; debug=true)
         # Create a new environment
         rm(Conda.prefix(new_env); force=true, recursive=true)
         Conda.import_list(
-            IOBuffer(read("conda-pkg.txt")), new_env; channels=["foo", alt_channel, default_channel]
+            IOBuffer(read("conda-pkg.txt")), new_env; channels=[alt_channel, default_channel]
         )
 
         # Ensure that our new environment has our channels and package installed.
-        @test Conda.channels(new_env) == ["foo", alt_channel, default_channel]
+        @test Conda.channels(new_env) == [alt_channel, default_channel]
         installed = Conda._installed_packages(new_env)
         @test "curl" ∈ installed
         rm("conda-pkg.txt")
