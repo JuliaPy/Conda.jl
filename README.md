@@ -100,6 +100,11 @@ As of [conda 4.6.0](https://docs.conda.io/projects/conda/en/latest/user-guide/co
 
 ```jl
 julia> Conda.pip_interop(true, env)
+```
+Where `env` might be `Conda.ROOTENV`:
+
+```jl
+julia> Conda.pip_interop(true, Conda.ROOTENV)
 
 julia> Conda.pip("install", "somepackage")
 
