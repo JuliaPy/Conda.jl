@@ -11,7 +11,7 @@ module DefaultDeps
         const MINICONDA_VERSION = "3"
     end
     if !isdefined(@__MODULE__, :ROOTENV)
-        const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION)
+        const ROOTENV = joinpath(Main.condadir, MINICONDA_VERSION, string(Sys.ARCH))
     end
 
     USE_MINIFORGE_DEFAULT = true
