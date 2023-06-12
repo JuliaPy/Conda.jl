@@ -402,9 +402,9 @@ function import_list(
     env::Environment=ROOTENV;
     channels=String[]
 )
-    channel_str = ["-c $channel" for channel in channels]
+    channel_str = ["-c=$channel" for channel in channels]
     run(_set_conda_env(
-        `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
+                       `$conda create $(_quiet()) -y -p $(prefix(env)) $(Cmd(channel_str)) --file $filepath`,
         env
     ))
     # persist the channels given for this environment
