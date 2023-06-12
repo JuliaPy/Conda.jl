@@ -219,9 +219,14 @@ end
 const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
 
 "Install a new package or packages."
-function add(pkg::PkgOrPkgs, env::Environment=ROOTENV; channel::AbstractString="")
+function add(pkg::PkgOrPkgs, env::Environment=ROOTENV;
+             channel::AbstractString="",
+             satisfied_skip_solve::Bool = false,
+             args::Cmd = ``,
+            )
     c = isempty(channel) ? `` : `-c $channel`
-    runconda(`install $(_quiet()) -y $c $pkg`, env)
+    S = satisfied_skip_solve ? `--satisfied-skip-solve` : ``
+    runconda(`install $(_quiet()) -y $c $S $args $pkg`, env)
 end
 
 "Uninstall a package or packages."
@@ -397,9 +402,9 @@ function import_list(
     env::Environment=ROOTENV;
     channels=String[]
 )
-    channel_str = ["-c $channel" for channel in channels]
+    channel_str = ["-c=$channel" for channel in channels]
     run(_set_conda_env(
-        `$conda create $(_quiet()) -y -p $(prefix(env)) $channel_str --file $filepath`,
+                       `$conda create $(_quiet()) -y -p $(prefix(env)) $(Cmd(channel_str)) --file $filepath`,
         env
     ))
     # persist the channels given for this environment
