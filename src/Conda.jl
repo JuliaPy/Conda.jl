@@ -219,9 +219,9 @@ end
 const PkgOrPkgs = Union{AbstractString, AbstractVector{<: AbstractString}}
 
 "Install a new package or packages."
-function add(pkg::PkgOrPkgs, env::Environment=ROOTENV; channel::AbstractString="")
+function add(pkg::PkgOrPkgs, env::Environment=ROOTENV; channel::AbstractString="", options::AbstractString="")
     c = isempty(channel) ? `` : `-c $channel`
-    runconda(`install $(_quiet()) -y $c $pkg`, env)
+    runconda(`install $(_quiet()) -y $c $options $pkg`, env)
 end
 
 "Uninstall a package or packages."
