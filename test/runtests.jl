@@ -84,6 +84,27 @@ Conda.add("zlib", env; channel=alt_channel)
     end
 end
 
+@testset "Install Numpy with Satisfied Skip Solve" begin
+    mktempdir() do env
+        Conda.create(env)
+
+        # Add with low version number constraint
+        Conda.add("numpy=1.14", env)
+        ver = Conda.version("numpy", env)
+        @test ver >= v"1.14" && ver < v"1.15"
+
+        # Readd with satisified skip solve, version should not change
+        Conda.add("numpy", env; satisfied_skip_solve = true)
+        ver = Conda.version("numpy", env)
+        @test ver >= v"1.14" && ver < v"1.15"
+
+        # Readd with -S, version should not change
+        Conda.add("numpy", env; args=`-S`)
+        ver = Conda.version("numpy", env)
+        @test ver >= v"1.14" && ver < v"1.15"
+    end
+end
+
 # Run conda clean
 Conda.clean(; debug=true)
 
