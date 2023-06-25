@@ -55,11 +55,11 @@ USE_MINIFORGE = lowercase(get(ENV, "CONDA_JL_USE_MINIFORGE", DefaultDeps.USE_MIN
 
 if isdir(ROOTENV) && MINICONDA_VERSION != DefaultDeps.MINICONDA_VERSION
     error("""Miniconda version changed, since last build.
-However, a root enviroment already exists at $(ROOTENV).
-Setting Miniconda version is not supported for existing root enviroments.
-To leave Miniconda version as, it is unset the CONDA_JL_VERSION enviroment variable and rebuild.
-To change Miniconda version, you must delete the root enviroment and rebuild.
-WARNING: deleting the root enviroment will delete all the packages in it.
+However, a root environment already exists at $(ROOTENV).
+Setting Miniconda version is not supported for existing root environments.
+To leave Miniconda version as, it is unset the CONDA_JL_VERSION environment variable and rebuild.
+To change Miniconda version, you must delete the root environment and rebuild.
+WARNING: deleting the root environment will delete all the packages in it.
 This will break many Julia packages that have used Conda to install their dependancies.
 These will require rebuilding.
 """)
