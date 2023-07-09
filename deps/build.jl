@@ -103,6 +103,8 @@ const CONDA_EXE = "$(escape_string(CONDA_EXE))"
 mkpath(condadir)
 mkpath(ROOTENV)
 
+write("$ROOTENV/condarc-julia.yml", "auto_update_conda: false")
+
 for depsfile in ("deps.jl", condadeps)
     if !isfile(depsfile) || read(depsfile, String) != deps
         write(depsfile, deps)
