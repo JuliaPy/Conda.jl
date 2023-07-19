@@ -242,7 +242,17 @@ function add(pkg::PkgOrPkgs, env::Environment=ROOTENV;
              args::Cmd = ``,
             )
     c = isempty(channel) ? `` : `-c $channel`
-    S = satisfied_skip_solve ? `--satisfied-skip-solve` : ``
+    @static if Sys.iswindows() && Sys.WORD_SIZE == 32
+        if satisfied_skip_solve
+            @warn """
+            The keyword satisfied_skip_solve was set to true,
+            but conda does not support --satisfied-skip-resolve on 32-bit Windows.
+            """
+        end
+        S = ``
+    else
+        S = satisfied_skip_solve ? `--satisfied-skip-solve` : ``
+    end
     runconda(`install $(_quiet()) -y $c $S $args $pkg`, env)
 end
 
