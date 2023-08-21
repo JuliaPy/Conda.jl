@@ -227,7 +227,7 @@ https://github.com/JuliaPy/Conda.jl.
         if Sys.iswindows()
             run(Cmd(`$installer /S --no-shortcuts /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
-        write("$PREFIX/condarc-julia.yml", "auto_update_conda: false")
+        write("$PREFIX/.condarc", "auto_update_conda: false")
     end
     if !isdir(prefix(env))
         create(env)
