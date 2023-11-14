@@ -177,6 +177,10 @@ Pkg.build("IJulia")
 ```
 
 
+## Troubleshooting
+
+In case there is something wrong with Conda configuration, it is possible to clean the installation by deleting the `.julia/conda` directory.
+
 ## Bugs and suggestions
 
 Conda has been tested on Linux, OS X, and Windows.
