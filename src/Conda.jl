@@ -304,7 +304,7 @@ https://github.com/JuliaPy/Conda.jl.
             run(`$installer -b -f -p $PREFIX`)
         end
         if Sys.iswindows()
-            run(Cmd(`$installer /S --no-shortcuts /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
+            run(Cmd(`$installer /S /NoShortcuts=1 /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$PREFIX`, windows_verbatim=true))
         end
         write("$PREFIX/condarc-julia.yml", "auto_update_conda: false")
     end
