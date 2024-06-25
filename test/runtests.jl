@@ -89,19 +89,19 @@ end
         Conda.create(env)
 
         # Add with low version number constraint
-        Conda.add("numpy=1.14", env)
+        Conda.add("numpy=1.22", env)
         ver = Conda.version("numpy", env)
-        @test ver >= v"1.14" && ver < v"1.15"
+        @test ver >= v"1.22" && ver < v"1.23"
 
         # Readd with satisified skip solve, version should not change
         Conda.add("numpy", env; satisfied_skip_solve = true)
         ver = Conda.version("numpy", env)
-        @test ver >= v"1.14" && ver < v"1.15"
+        @test ver >= v"1.22" && ver < v"1.23"
 
         # Readd with -S, version should not change
         Conda.add("numpy", env; args=`-S`)
         ver = Conda.version("numpy", env)
-        @test ver >= v"1.14" && ver < v"1.15"
+        @test ver >= v"1.22" && ver < v"1.23"
     end
 end
 
