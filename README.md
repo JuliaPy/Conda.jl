@@ -1,11 +1,9 @@
 # Conda.jl
 
-[![Build Status -- OS X and Linux](https://travis-ci.org/JuliaPy/Conda.jl.svg?branch=master)](https://travis-ci.org/JuliaPy/Conda.jl)
-[![Build status -- Windows](https://ci.appveyor.com/api/projects/status/edlxohso05re3v40/branch/master?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/conda-jl)
+[![Build Status](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPy/Conda.jl/actions/workflows/CI.yml)
 
 This package allows one to use [conda](http://conda.pydata.org/) as a cross-platform binary provider for Julia for other Julia packages,
-especially to install binaries that have complicated dependencies
-like Python.
+especially to install binaries that have complicated dependencies like Python.
 
 `conda` is a package manager which started as the binary package manager for the
 Anaconda Python distribution, but it also provides arbitrary packages. Instead
@@ -82,6 +80,20 @@ julia> ENV["CONDA_JL_HOME"] = "/path/to/miniconda/envs/conda_jl"  # change this 
 pkg> build Conda
 ```
 
+## Using a conda executable outside of the home environment
+To use a specific conda executable, set the `CONDA_JL_CONDA_EXE` environment
+variable to the location of the conda executable. This conda executable can
+exist outside of the environment set by `CONDA_JL_HOME`. To apply the settting,
+rebuild `Conda.jl`. In Julia, run:
+
+```jl
+julia> ENV["CONDA_JL_CONDA_EXE"] = "/path/to/miniconda/bin/conda" # change this to the path of the conda executable
+
+pkg> build Conda
+```
+
+*The use of `CONDA_JL_CONDA_EXE` requires at least version 1.7 of Conda.jl.*
+
 ## Conda and pip
 As of [conda 4.6.0](https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/pip-interoperability.html#improving-interoperability-with-pip) there is improved support for PyPi packages.
 **Conda is still the recommended installation method** however if there are packages that are only availible with `pip` one can do the following:
@@ -133,8 +145,44 @@ julia> ENV["CONDA_JL_USE_MINIFORGE"] = "1"
 pkg> build Conda
 ```
 
-Also note that you have to use Miniforge for `aarch64-linux-gnu` and
-`aarch64-apple-darwin` platforms as Miniconda is not available for those platforms yet.
+Note that Conda.jl 1.6 and above will use miniforge by default on x86_64, aarch64
+and ppc64le systems.
+
+
+## Troubleshooting
+
+### Installation with special characters in user names
+
+If you have a special character in your user name (like an umlaut or an accent) the installation which defaults to
+directory `C:\Users\<username>\.julia\Conda\3` will fail on Windows. A space in your user name will also fail on any platform.
+This is a [known issue](https://github.com/conda/conda/issues/10239). The work-around is to install Miniconda to a user-writable directory outside of the home directory.
+Before installing `Conda.jl`, choose a directory without space and without special characters and set the environment variable `CONDA_JL_HOME` as follows inside a julia session:
+
+```julia
+ENV["CONDA_JL_HOME"] = raw"C:\Conda-Julia\3"
+using Pkg
+Pkg.build("Conda")
+```
+
+After restarting Julia, you can verify the new installation directory:
+
+```julia
+using Conda
+@show Conda.ROOTENV
+```
+
+If you use `IJulia` or `PyCall`, they need to be re-build:
+
+```julia
+using Pkg
+Pkg.build("PyCall")
+Pkg.build("IJulia")
+```
+
+
+## Troubleshooting
+
+In case there is something wrong with Conda configuration, it is possible to clean the installation by deleting the `.julia/conda` directory.
 
 ## Bugs and suggestions
 
