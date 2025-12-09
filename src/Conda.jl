@@ -329,12 +329,24 @@ function add(pkg::PkgOrPkgs, env::Environment=ROOTENV;
              args::Cmd = ``,
             )
     c = isempty(channel) ? `` : `-c $channel`
-    @static if Sys.iswindows() && Sys.WORD_SIZE == 32
+    @static if (Sys.iswindows() || Sys.islinux()) && Sys.WORD_SIZE == 32
         if satisfied_skip_solve
-            @warn """
-            The keyword satisfied_skip_solve was set to true,
-            but conda does not support --satisfied-skip-resolve on 32-bit Windows.
-            """
+            if Sys.iswindows()
+                @warn """
+                The keyword satisfied_skip_solve was set to true,
+                but conda does not support --satisfied-skip-resolve on 32-bit Windows.
+                """
+            else
+                # --satisfied-skip-solve flag was introduced in Conda 4.6.0
+                # https://docs.conda.io/projects/conda/en/latest/release-notes.html#version-4.6.0
+                # 32 bit builds on https://repo.anaconda.com/miniconda/ (where non-
+                # miniconda builds are by default sourced from) have not been updated since
+                # 4.5.12 for Linux-x86
+                @warn """
+                The keyword satisfied_skip_solve was set to true, but Conda builds for
+                32 bit are (by default) quite old and do not support --satisfied-skip-resolve.
+                """
+            end
         end
         S = ``
     else
