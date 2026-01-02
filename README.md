@@ -112,15 +112,18 @@ julia> Conda.pip("uninstall", ["somepackage1", "somepackage2])
 
 If the uninstall command is to be used noninteractively, one can use `"uninstall -y"` to answer yes to the prompts.
 
-## Using Python 2
-By default, the Conda.jl package [installs Python 3]((https://conda.io/docs/py2or3.htm)),
+## Using older Python version
+By default, the Conda.jl package [installs Python 3]((https://conda.io/docs/py2or3.htm)) in its latest release,
 and this version of Python is used for all Python dependencies.  If you want to
-use Python 2 instead, set `CONDA_JL_VERSION` to `"2"` *prior to installing Conda*.
+use Python 2 instead, set `CONDA_JL_VERSION` to `"2-latest"` *prior to installing Conda*.
 (This only needs to be done once; Conda subsequently remembers the version setting.)
+
+If you want to use a different miniconda-version please look at the [repository](https://repo.anaconda.com/miniconda/) and select
+the specified number. For example "3-4.7.12-1" to install version 4.7.12-1 of miniconda3.
 
 Once you have installed Conda and run its Miniconda installer, the Python version
 cannot be changed without deleting your existing Miniconda installation.
-If you set `ENV["CONDA_JL_VERSION"]="2"` and run `Pkg.build("Conda")`, it will
+If you set `ENV["CONDA_JL_VERSION"]="2-latest"` and run `Pkg.build("Conda")`, it will
 tell you how to delete your existing Miniconda installation if needed.
 
 Most users will not need to use Python 2. This is provided primarily for developers wishing to test their packages for both Python 2 and Python, e.g. by setting the `CONDA_JL_VERSION`
