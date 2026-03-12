@@ -287,14 +287,7 @@ https://github.com/JuliaPy/Conda.jl.
         end
 
         @info("Downloading miniconda installer ...")
-        INSTALLER_DIR = tempdir()
-        if Sys.isunix()
-            installer = joinpath(INSTALLER_DIR, "installer.sh")
-        end
-        if Sys.iswindows()
-            installer = joinpath(INSTALLER_DIR, "installer.exe")
-        end
-        mkpath(INSTALLER_DIR)
+        installer = tempname() * (Sys.iswindows() ? ".exe" : ".sh")
         Downloads.download(_installer_url(), installer)
 
         @info("Installing miniconda ...")
