@@ -193,8 +193,6 @@ parsing resulting JSON output and returning a Julia dictionary of the contents.
 (Installs `conda` if necessary, and sanitizes the runtime environment using
 `_get_conda_env`.)
 """
-
-"Run conda command with environment variables set and return the json output as a julia object"
 function parseconda(args::Cmd, env::Environment=ROOTENV)
     _install_conda(env)
     JSON.parse(read(_set_conda_env(`$conda $args --json`, env), String); dicttype=Dict{String, Any})
